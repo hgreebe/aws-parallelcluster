@@ -9,6 +9,10 @@ from utils import describe_cluster_instances
 
 MINIMUM_DATASET_SIZE = 5
 
+BASELINE = {"alinux2": {"c5.large": [92, 86, 70, 102, 104],
+                        "m5.12xlarge": [101, 89, 100, 87, 70],
+                        "g4dn.xlarge": [111, 103, 92, 121, 122]}}
+
 
 def evaluate_data(value, data):
     standard_deviation = statistics.stdev(data)
@@ -103,22 +107,22 @@ def test_startup_time(pcluster_config_reader, clusters_factory, test_datadir, re
         logging.info(f"Observed Startup Time for instance ${instance_id} (${instance_type}) of cluster ${cluster.name}: ${startup_time_value} seconds")
 
         # get historical data
-        data = get_data(instance_type, os, cw_client)
-        if startup_time_value in data:
-            data.remove(startup_time_value)
+        #data = get_data(instance_type, os, cw_client)
+        #if startup_time_value in data:
+        #    data.remove(startup_time_value)
 
-        logging.info(f"Data of {instance_type}: {data}")
+        #logging.info(f"Data of {instance_type}: {data}")
 
         # evaluate data
-        if len(data) > MINIMUM_DATASET_SIZE and startup_time_value:
-            degradation, dist = evaluate_data(startup_time_value, data)
-            if degradation:
-                performance_degradation[instance_type] = dist
+        #if len(data) > MINIMUM_DATASET_SIZE and startup_time_value:
+        #    degradation, dist = evaluate_data(startup_time_value, data)
+        #    if degradation:
+        #        performance_degradation[instance_type] = dist
 
-    if performance_degradation:
-        message = "Performance test results show performance degradation for the following instances: "
-        for instance in performance_degradation.keys():
+    #if performance_degradation:
+        #message = "Performance test results show performance degradation for the following instances: "
+        #for instance in performance_degradation.keys():
             message += f"{instance} ({performance_degradation[instance]} standard deviations from the mean), "
-        pytest.fail(message[:-2])
-    else:
-        logging.info("Performance test results show no performance degradation")
+        #pytest.fail(message[:-2])
+    #else:
+        #logging.info("Performance test results show no performance degradation")

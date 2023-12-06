@@ -4,5 +4,5 @@ test-suites:
       dimensions:
         - regions: ["us-east-1"]
           instances: ["c5.large"]
-          oss: ["alinux2"]
+          oss: ["centos7"]
           schedulers: ["slurm"]

@@ -17,8 +17,8 @@ Scheduling:
       ComputeResources:
         - Name: q1
           InstanceType: {{ instance }}
-          MinCount: 3
-          MaxCount: 3
+          MinCount: 4
+          MaxCount: 5
           DisableSimultaneousMultithreading: true
       Networking:
         SubnetIds:
@@ -30,8 +30,8 @@ Scheduling:
       ComputeResources:
         - Name: q2
           InstanceType: g4dn.xlarge
-          MinCount: 3
-          MaxCount: 3
+          MinCount: 4
+          MaxCount: 5
           DisableSimultaneousMultithreading: true
       Networking:
         SubnetIds:
@@ -43,8 +43,8 @@ Scheduling:
       ComputeResources:
         - Name: q3
           InstanceType: m5.12xlarge
-          MinCount: 3
-          MaxCount: 3
+          MinCount: 4
+          MaxCount: 5
           DisableSimultaneousMultithreading: true
       Networking:
         SubnetIds:
