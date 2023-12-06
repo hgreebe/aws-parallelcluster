@@ -53,7 +53,7 @@ def get_data(instance_type, os, cw_client):
 
 
 def get_metric(os, cluster, instance_type, instance_id, cw_client):
-    value = None
+    startup_time_value = None
 
     dimensions = [
         {"Name": "OS", "Value": os},
@@ -76,8 +76,8 @@ def get_metric(os, cluster, instance_type, instance_id, cw_client):
     logging.info(f"Results: {result}")
 
     if result["Datapoints"]:
-        value = result["Datapoints"][0].get("Average")
-    return value
+        startup_time_value = result["Datapoints"][0].get("Average")
+    return startup_time_value
 
 
 def test_startup_time(pcluster_config_reader, clusters_factory, test_datadir, region, instance, os, scheduler):
@@ -99,21 +99,19 @@ def test_startup_time(pcluster_config_reader, clusters_factory, test_datadir, re
         instance_id = instance["InstanceId"]
         logging.info(f"Type: {instance_type}")
 
-        # get new startup time
-
-        value = get_metric(os, cluster, instance_type, instance_id, cw_client)
-        logging.info(f"Value: {value}")
+        startup_time_value = get_metric(os, cluster, instance_type, instance_id, cw_client)
+        logging.info(f"Observed Startup Time for instance ${instance_id} (${instance_type}) of cluster ${cluster.name}: ${startup_time_value} seconds")
 
         # get historical data
         data = get_data(instance_type, os, cw_client)
-        if value in data:
-            data.remove(value)
+        if startup_time_value in data:
+            data.remove(startup_time_value)
 
         logging.info(f"Data of {instance_type}: {data}")
 
         # evaluate data
-        if len(data) > MINIMUM_DATASET_SIZE and value:
-            degradation, dist = evaluate_data(value, data)
+        if len(data) > MINIMUM_DATASET_SIZE and startup_time_value:
+            degradation, dist = evaluate_data(startup_time_value, data)
             if degradation:
                 performance_degradation[instance_type] = dist
 
