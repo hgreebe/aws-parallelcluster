@@ -4,5 +4,5 @@ test-suites:
       dimensions:
         - regions: ["us-east-1"]
           instances: ["c5.large"]
-          oss: ["rhel8"]
+          oss: ["ubuntu2004"]
           schedulers: ["slurm"]
