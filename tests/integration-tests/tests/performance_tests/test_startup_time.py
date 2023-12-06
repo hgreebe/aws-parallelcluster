@@ -122,7 +122,7 @@ def test_startup_time(pcluster_config_reader, clusters_factory, test_datadir, re
     #if performance_degradation:
         #message = "Performance test results show performance degradation for the following instances: "
         #for instance in performance_degradation.keys():
-            message += f"{instance} ({performance_degradation[instance]} standard deviations from the mean), "
+        #    message += f"{instance} ({performance_degradation[instance]} standard deviations from the mean), "
         #pytest.fail(message[:-2])
     #else:
         #logging.info("Performance test results show no performance degradation")
