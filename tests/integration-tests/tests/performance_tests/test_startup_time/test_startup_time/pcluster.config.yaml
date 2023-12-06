@@ -17,7 +17,7 @@ Scheduling:
       ComputeResources:
         - Name: q1
           InstanceType: {{ instance }}
-          MinCount: 4
+          MinCount: 5
           MaxCount: 5
           DisableSimultaneousMultithreading: true
       Networking:
@@ -30,7 +30,7 @@ Scheduling:
       ComputeResources:
         - Name: q2
           InstanceType: g4dn.xlarge
-          MinCount: 4
+          MinCount: 5
           MaxCount: 5
           DisableSimultaneousMultithreading: true
       Networking:
@@ -43,7 +43,7 @@ Scheduling:
       ComputeResources:
         - Name: q3
           InstanceType: m5.12xlarge
-          MinCount: 4
+          MinCount: 5
           MaxCount: 5
           DisableSimultaneousMultithreading: true
       Networking:
