@@ -17,7 +17,10 @@ BASELINE = {"alinux2": {"c5.large": [92, 86, 70, 102, 104],
                         "g4dn.xlarge": [78, 77, 78, 66, 69]},
             "rhel8": {"c5.large": [72, 67, 82, 73, 79],
                       "m5.12xlarge": [64, 59, 58, 56, 63],
-                      "g4dn.xlarge": [76, 83, 79, 84, 86]}}
+                      "g4dn.xlarge": [76, 83, 79, 84, 86]},
+            "ubuntu2004": {"c5.large": [71, 72, 83, 71, 84],
+                      "m5.12xlarge": [69, 75, 68, 61, 79],
+                      "g4dn.xlarge": [86, 108, 108, 109, 107]}}
 
 
 def evaluate_data(value, data):
