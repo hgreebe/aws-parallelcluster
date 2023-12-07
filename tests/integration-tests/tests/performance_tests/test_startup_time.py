@@ -9,21 +9,37 @@ from utils import describe_cluster_instances
 
 MINIMUM_DATASET_SIZE = 5
 
-BASELINE = {"alinux2": {"c5.large": [92, 86, 70, 102, 104],
-                        "m5.12xlarge": [101, 89, 100, 87, 70],
-                        "g4dn.xlarge": [111, 103, 92, 121, 122]},
-            "centos7": {"c5.large": [58, 59, 58, 57, 60],
-                        "m5.12xlarge": [70, 71, 58, 60, 61],
-                        "g4dn.xlarge": [78, 77, 78, 66, 69]},
-            "rhel8": {"c5.large": [72, 67, 82, 73, 79],
-                      "m5.12xlarge": [64, 59, 58, 56, 63],
-                      "g4dn.xlarge": [76, 83, 79, 84, 86]},
-            "ubuntu2004": {"c5.large": [71, 72, 83, 71, 84],
-                      "m5.12xlarge": [69, 75, 68, 61, 79],
-                      "g4dn.xlarge": [86, 108, 108, 109, 107]}}
+BASELINE = {
+    "alinux2": {
+        "c5.large": [92, 86, 70, 102, 104],
+        "m5.12xlarge": [101, 89, 100, 87, 70],
+        "g4dn.xlarge": [111, 103, 92, 121, 122],
+    },
+    "centos7": {
+        "c5.large": [58, 59, 58, 57, 60],
+        "m5.12xlarge": [70, 71, 58, 60, 61],
+        "g4dn.xlarge": [78, 77, 78, 66, 69],
+    },
+    "rhel8": {
+        "c5.large": [72, 67, 82, 73, 79],
+        "m5.12xlarge": [64, 59, 58, 56, 63],
+        "g4dn.xlarge": [76, 83, 79, 84, 86],
+    },
+    "ubuntu2004": {
+        "c5.large": [71, 72, 83, 71, 84],
+        "m5.12xlarge": [69, 75, 68, 61, 79],
+        "g4dn.xlarge": [86, 108, 108, 109, 107],
+    },
+    "ubuntu2204": {
+        "c5.large": [80, 83, 84, 73, 80],
+        "m5.12xlarge": [70, 71, 69, 68, 72],
+        "g4dn.xlarge": [86, 87, 88, 85, 87],
+    },
+}
 
 
-def evaluate_data(value, data):
+def evaluate_data(value, os, instance_type):
+    data = BASELINE[os][instance_type]
     standard_deviation = statistics.stdev(data)
     mean = statistics.mean(data)
     logging.info(f"Mean: {mean}")
@@ -33,36 +49,6 @@ def evaluate_data(value, data):
     if value < (mean + 2 * standard_deviation) or value > (mean - 2 * standard_deviation):
         return False, distance
     return True, distance
-
-
-def get_data(instance_type, os, cw_client):
-    data = []
-    dimensions = [{"Name": "InstanceType", "Value": instance_type}, {"Name": "OS", "Value": os}]
-
-    cluster_metrics = cw_client.list_metrics(
-        Namespace="ParallelCluster", MetricName="StartupTime", Dimensions=dimensions
-    )
-
-    logging.info(f"Metrics: {cluster_metrics}")
-
-    for metric in cluster_metrics["Metrics"]:
-        result = cw_client.get_metric_statistics(
-            Namespace="ParallelCluster",
-            MetricName="StartupTime",
-            Dimensions=metric["Dimensions"],
-            StartTime=datetime.now() - relativedelta(years=1),
-            EndTime=datetime.now(),
-            Period=30000,
-            Statistics=["Average"],
-            Unit="None",
-        )
-
-        logging.info(f"Results: {result}")
-
-        if result["Datapoints"]:
-            value = result["Datapoints"][0].get("Average")
-            data.append(value)
-    return data
 
 
 def get_metric(os, cluster, instance_type, instance_id, cw_client):
@@ -93,7 +79,7 @@ def get_metric(os, cluster, instance_type, instance_id, cw_client):
     return startup_time_value
 
 
-def test_startup_time(pcluster_config_reader, clusters_factory, test_datadir, region, instance, os, scheduler):
+def test_startup_time(pcluster_config_reader, clusters_factory, test_datadir, region, os, scheduler):
     cluster_config = pcluster_config_reader()
     cluster = clusters_factory(cluster_config)
 
@@ -113,26 +99,23 @@ def test_startup_time(pcluster_config_reader, clusters_factory, test_datadir, re
         logging.info(f"Type: {instance_type}")
 
         startup_time_value = get_metric(os, cluster, instance_type, instance_id, cw_client)
+        if startup_time_value is None:
+            pytest.fail(
+                f"Failed to retrieve startup time for instance {instance_id} ({instance_type}) of cluster {cluster.name}"
+            )
         logging.info(
-            f"Observed Startup Time for instance {instance_id} ({instance_type}) of cluster {cluster.name}: {startup_time_value} seconds")
-
-        # get historical data
-        # data = get_data(instance_type, os, cw_client)
-        # if startup_time_value in data:
-        #    data.remove(startup_time_value)
-
-        # logging.info(f"Data of {instance_type}: {data}")
+            f"Observed Startup Time for instance {instance_id} ({instance_type}) of cluster {cluster.name}: {startup_time_value} seconds"
+        )
 
         # evaluate data
-        # if len(data) > MINIMUM_DATASET_SIZE and startup_time_value:
-        #    degradation, dist = evaluate_data(startup_time_value, data)
-        #    if degradation:
-        #        performance_degradation[instance_type] = dist
+        degradation, dist = evaluate_data(startup_time_value, os, instance_type)
+        if degradation:
+            performance_degradation[instance_type] = dist
 
-    # if performance_degradation:
-    # message = "Performance test results show performance degradation for the following instances: "
-    # for instance in performance_degradation.keys():
-    #    message += f"{instance} ({performance_degradation[instance]} standard deviations from the mean), "
-    # pytest.fail(message[:-2])
-    # else:
-    # logging.info("Performance test results show no performance degradation")
+    if performance_degradation:
+        message = "Performance test results show performance degradation for the following instances: "
+        for instance in performance_degradation.keys():
+            message += f"{instance} ({performance_degradation[instance]} standard deviations from the mean), "
+        pytest.fail(message[:-2])
+    else:
+        logging.info("Performance test results show no performance degradation")

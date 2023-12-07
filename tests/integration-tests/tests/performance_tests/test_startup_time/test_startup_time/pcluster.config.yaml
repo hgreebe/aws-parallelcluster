@@ -16,7 +16,7 @@ Scheduling:
     - Name: q1
       ComputeResources:
         - Name: q1
-          InstanceType: {{ instance }}
+          InstanceType: c5.large
           MinCount: 5
           MaxCount: 5
           DisableSimultaneousMultithreading: true
