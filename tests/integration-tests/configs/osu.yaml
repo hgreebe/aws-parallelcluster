@@ -1,9 +1,8 @@
-{%- import 'common.jinja2' as common with context -%}
 test-suites:
   performance_tests:
     test_osu.py::test_osu:
       dimensions:
         - regions: [ "euw1-az1" ]  # do not move, unless capacity reservation is moved as well
           instances: [ "c5n.18xlarge" ]
-          oss: {{ common.OSS_COMMERCIAL_X86 }}
+          oss: ["rocky8"]
           schedulers: [ "slurm" ]
