@@ -143,7 +143,7 @@ from pcluster.validators.ec2_validators import (
     InstanceTypeValidator,
     KeyPairValidator,
     PlacementGroupCapacityReservationValidator,
-    PlacementGroupNamingValidator,
+    PlacementGroupNamingValidator, InstanceTypeOSCompatibleValidator,
 )
 from pcluster.validators.efs_validators import EfsMountOptionsValidator
 from pcluster.validators.feature_validators import FeatureRegionValidator
@@ -1576,6 +1576,11 @@ class BaseClusterConfig(Resource):
                 instance_type=self.head_node.instance_type,
                 image=self.head_node_ami,
             )
+            self._register_validator(
+                InstanceTypeOSCompatibleValidator,
+                instance_type=self.head_node.instance_type,
+                os=self.image.os,
+            )
         if self.head_node.image and self.head_node.image.custom_ami:
             self._register_validator(
                 AmiOsCompatibleValidator, os=self.image.os, image_id=self.head_node.image.custom_ami
@@ -2973,6 +2978,11 @@ class SlurmClusterConfig(BaseClusterConfig):
                         instance_type=pool.instance_type,
                         image=self.login_nodes_ami[pool.name],
                     )
+                    self._register_validator(
+                        InstanceTypeOSCompatibleValidator,
+                        instance_type=pool.instance_type,
+                        os=self.image.os,
+                    )
 
         if self.scheduling.settings and self.scheduling.settings.dns and self.scheduling.settings.dns.hosted_zone_id:
             self._register_validator(
@@ -3082,6 +3092,11 @@ class SlurmClusterConfig(BaseClusterConfig):
                         InstanceTypeBaseAMICompatibleValidator,
                         instance_type=instance_type,
                         image=queue_image,
+                    )
+                    self._register_validator(
+                        InstanceTypeOSCompatibleValidator,
+                        instance_type=instance_type,
+                        os=self.image.os,
                     )
                     self._register_validator(
                         InstanceTypeAcceleratorManufacturerValidator,

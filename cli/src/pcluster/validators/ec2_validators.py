@@ -181,6 +181,17 @@ class InstanceTypeBaseAMICompatibleValidator(Validator):
         return AWSApi.instance().ec2.get_supported_architectures(instance_type)
 
 
+class InstanceTypeOSCompatibleValidator(Validator):
+    """EC2 Instance type and os compatibility validator."""
+
+    def _validate(self, instance_type: str, os: str):
+        if 'micro' in instance_type and (os == 'rhel9' or os == 'rocky9'):
+            self._add_failure(
+                "The use of instance type {0} is not supported by OS {1}.".format(
+                    instance_type, os), FailureLevel.ERROR,
+            )
+
+
 class KeyPairValidator(Validator):
     """
     EC2 key pair validator.

@@ -35,7 +35,7 @@ from pcluster.validators.ec2_validators import (
     InstanceTypeValidator,
     KeyPairValidator,
     PlacementGroupCapacityReservationValidator,
-    PlacementGroupNamingValidator,
+    PlacementGroupNamingValidator, InstanceTypeOSCompatibleValidator,
 )
 from tests.pcluster.aws.dummy_aws_api import mock_aws_api
 from tests.pcluster.validators.utils import assert_failure_messages
@@ -417,6 +417,35 @@ def test_instance_type_base_ami_compatible_validator(
     mocker.patch("pcluster.aws.ec2.Ec2Client.list_instance_types", return_value=instance_response)
     mocker.patch("pcluster.aws.ec2.Ec2Client.get_supported_architectures", return_value=instance_architectures)
     actual_failures = InstanceTypeBaseAMICompatibleValidator().execute(instance_type=instance_type, image=parent_image)
+    assert_failure_messages(actual_failures, expected_message)
+
+
+@pytest.mark.parametrize(
+    "instance_type, os, expected_message",
+    [
+        (
+            "c5.xlarge",
+            "rhel9",
+            None,
+        ),
+        (
+            "t2.micro",
+            "rocky9",
+            "The use of instance type t2.micro is not supported by OS rocky9.",
+        ),
+        (
+            "t2.micro",
+            "rocky8",
+            None,
+        ),
+    ],
+)
+def test_instance_type_base_ami_compatible_validator(
+        instance_type,
+        os,
+        expected_message,
+):
+    actual_failures = InstanceTypeOSCompatibleValidator().execute(instance_type=instance_type, os=os)
     assert_failure_messages(actual_failures, expected_message)
 
 
