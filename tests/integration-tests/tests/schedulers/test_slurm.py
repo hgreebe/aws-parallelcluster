@@ -57,7 +57,7 @@ from tests.common.hit_common import (
 from tests.common.mpi_common import compile_mpi_ring
 from tests.common.scaling_common import setup_ec2_launch_override_to_emulate_ice
 from tests.common.schedulers_common import SlurmCommands, TorqueCommands
-from tests.monitoring import structured_log_event_utils
+from tests.basic import structured_log_event_utils
 
 
 @pytest.mark.usefixtures("instance", "os")
