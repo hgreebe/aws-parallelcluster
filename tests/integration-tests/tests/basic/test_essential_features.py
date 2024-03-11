@@ -87,8 +87,8 @@ def _test_logging(
     headnode_ip = cluster.describe_cluster_instances(node_type="HeadNode")[0].get("privateIpAddress")
     log_group_name = get_cluster_log_groups_from_boto3(f"/aws/parallelcluster/{cluster.name}")[0].get("logGroupName")
 
-    scheduler_commands.submit_command("hostname", nodes=1, partition="queue-1")
-    scheduler_commands.submit_command("hostname", nodes=1, partition="queue-2")
+    scheduler_commands.submit_command("hostname", nodes=1, partition="broken-post-install")
+    scheduler_commands.submit_command("hostname", nodes=1, partition="bootstrap-scripts-args")
 
     with soft_assertions():
         assert_that_event_exists(cluster, r".+\.clustermgtd_events", "invalid-backing-instance-count")
