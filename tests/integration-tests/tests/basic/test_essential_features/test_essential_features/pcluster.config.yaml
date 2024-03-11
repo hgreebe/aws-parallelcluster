@@ -24,10 +24,10 @@ HeadNode:
       - BucketName: {{ bucket_name }}
   Imds:
     Secured: {{ imds_secured }}
-  { % if dcv_enabled % }
+  {% if dcv_enabled %}
   Dcv:
     Enabled: True
-  { % endif % }
+  {% endif %}
 Scheduling:
   Scheduler: {{ scheduler }}
   {% if scheduler == "awsbatch" %}AwsBatchQueues:{% else %}SlurmQueues:{% endif %}
