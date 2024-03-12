@@ -73,9 +73,13 @@ Scheduling:
           {% if scheduler == "awsbatch" %}
           InstanceTypes:
             - {{ instance }}
+          MinvCpus: 0
+          MaxvCpus: 0
           {% else %}
           Instances:
             - InstanceType: {{ instance }}
+          MinCount: 0
+          MaxCount: 2
           {% endif %}
       Networking:
         SubnetIds:
