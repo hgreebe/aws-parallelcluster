@@ -72,6 +72,7 @@ def test_cw_dashboard_builder(mocker, test_datadir, set_env, config_file_name, r
         if cluster_config.is_cw_logging_enabled:
             _verify_head_node_logs_conditions(cluster_config, output_yaml)
             _verify_common_error_metrics_graphs(cluster_config, output_yaml, region)
+            _verify_alarms(cluster_config, output_yaml)
         else:
             assert_that(output_yaml).does_not_contain("Head Node Logs")
             assert_that(output_yaml).does_not_contain("Cluster Health Metrics")
@@ -82,6 +83,27 @@ def test_cw_dashboard_builder(mocker, test_datadir, set_env, config_file_name, r
         assert_that(output_yaml).does_not_contain("CloudwatchDashboard")
         assert_that(output_yaml).does_not_contain("Cluster Alarms")
         assert_that(output_yaml).does_not_contain("Head Node EC2 Metrics")
+
+
+def _verify_alarms(cluster_config, output_yaml):
+    if cluster_config.monitoring.alarms.enabled:
+        health_alarm_name = "clustername-HeadNode-Health"
+        cpu_alarm_name = "clustername-HeadNode-Cpu"
+        mem_alarm_name = "clustername-HeadNode-Mem"
+        disk_alarm_name = "clustername-HeadNode-Disk"
+
+        assert_that(output_yaml).contains(health_alarm_name)
+        assert_that(output_yaml).contains(cpu_alarm_name)
+        assert_that(output_yaml).contains(mem_alarm_name)
+        assert_that(output_yaml).contains(disk_alarm_name)
+
+        assert_that(output_yaml).contains("Namespace: AWS/EC2")
+        assert_that(output_yaml).contains("CWAgent")
+
+        assert_that(output_yaml).contains("StatusCheckFailed")
+        assert_that(output_yaml).contains("CPUUtilization")
+        assert_that(output_yaml).contains("mem_used_percent")
+        assert_that(output_yaml).contains("disk_used_percent")
 
 
 def _extract_metric_filters(generated_template):

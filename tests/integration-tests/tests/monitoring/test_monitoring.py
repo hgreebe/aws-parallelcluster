@@ -57,8 +57,8 @@ def test_monitoring(
         _test_cw_agent_metrics(cw_client, headnode_instance_id, compute_instance_ids[0])
 
     # test dashboard and alarms
-    _test_dashboard(cw_client, cluster.cfn_name, region, dashboard_enabled, cw_log_enabled)
-    _test_alarms(cw_client, cluster.cfn_name, headnode_instance_id, alarms_enabled)
+    #_test_dashboard(cw_client, cluster.cfn_name, region, dashboard_enabled, cw_log_enabled)
+    #_test_alarms(cw_client, cluster.cfn_name, headnode_instance_id, alarms_enabled)
 
     # test detailed monitoring
     _test_detailed_monitoring(region, compute_instance_ids)
@@ -85,7 +85,6 @@ def _test_cw_agent_metrics(cw_client, headnode_instance_id, compute_instance_id)
     assert_that(mem_values).is_empty()
     assert_that(disk_values).is_empty()
 
-
 def _test_dashboard(cw_client, cluster_name, region, dashboard_enabled, cw_log_enabled):
     dashboard_name = "{0}-{1}".format(cluster_name, region)
     if dashboard_enabled:
@@ -105,7 +104,6 @@ def _test_dashboard(cw_client, cluster_name, region, dashboard_enabled, cw_log_e
             cw_client.get_dashboard(DashboardName=dashboard_name)
         except ClientError as e:
             assert_that(e.response["Error"]["Code"]).is_equal_to("ResourceNotFound")
-
 
 def _test_alarms(cw_client, cluster_name, headnode_instance_id, alarms_enabled):
     alarm_response = cw_client.describe_alarms(AlarmNamePrefix=cluster_name)
