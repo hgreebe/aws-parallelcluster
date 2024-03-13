@@ -15,17 +15,30 @@ import boto3
 import pytest
 from assertpy import soft_assertions
 from remote_command_executor import RemoteCommandExecutor
+from tests.basic.disable_hyperthreading_utils import _test_disable_hyperthreading_settings
 from tests.basic.structured_log_event_utils import assert_that_event_exists
 from tests.cloudwatch_logging.cloudwatch_logging_boto3_utils import get_cluster_log_groups_from_boto3
 from tests.basic.log_rotation_utils import _test_headnode_log_rotation, _test_compute_log_rotation
+from tests.common.utils import fetch_instance_slots, run_system_analyzer
 from utils import check_status, is_dcv_supported, test_cluster_health_metric
 
-from tests.common.assertions import wait_for_num_instances_in_queue, wait_instance_replaced_or_terminating
+from tests.common.assertions import wait_for_num_instances_in_queue, wait_instance_replaced_or_terminating, \
+    assert_no_errors_in_logs
 
 
 @pytest.mark.usefixtures("os", "instance", "scheduler")
 def test_essential_features(
-    region, pcluster_config_reader, s3_bucket_factory, clusters_factory, test_datadir, scheduler_commands_factory, os
+    region,
+    pcluster_config_reader,
+    s3_bucket_factory,
+    clusters_factory,
+    test_datadir,
+    scheduler_commands_factory,
+    os,
+    scheduler,
+    instance,
+    default_threads_per_core,
+    request,
 ):
     """Verify fundamental features for a cluster work as expected."""
     # Create S3 bucket for pre/post install scripts
@@ -47,6 +60,46 @@ def test_essential_features(
     _test_replace_compute_on_failure(cluster, region, scheduler_commands_factory)
 
     _test_logging(cluster, scheduler_commands_factory, os, dcv_enabled, region)
+
+    #_test_hit_disable_hyperthreading(cluster, region, instance, default_threads_per_core, scheduler_commands_factory,
+    #                                 request, scheduler)
+
+
+def _test_hit_disable_hyperthreading(
+        cluster,
+        region,
+        instance,
+        default_threads_per_core,
+        scheduler_commands_factory,
+        request,
+        scheduler,
+):
+    """Test Disable Hyperthreading for HIT clusters."""
+    slots_per_instance = fetch_instance_slots(region, instance)
+    remote_command_executor = RemoteCommandExecutor(cluster)
+    scheduler_commands = scheduler_commands_factory(remote_command_executor)
+    _test_disable_hyperthreading_settings(
+        remote_command_executor,
+        scheduler_commands,
+        slots_per_instance,
+        scheduler,
+        hyperthreading_disabled=False,
+        partition="ht-enabled",
+        default_threads_per_core=default_threads_per_core,
+    )
+    _test_disable_hyperthreading_settings(
+        remote_command_executor,
+        scheduler_commands,
+        slots_per_instance,
+        scheduler,
+        hyperthreading_disabled=True,
+        partition="ht-disabled",
+        default_threads_per_core=default_threads_per_core,
+    )
+
+    assert_no_errors_in_logs(remote_command_executor, scheduler)
+    run_system_analyzer(cluster, scheduler_commands_factory, request)
+
 
 
 def _test_replace_compute_on_failure(cluster, region, scheduler_commands_factory):
