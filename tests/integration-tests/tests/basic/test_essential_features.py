@@ -10,6 +10,7 @@
 # This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express or implied.
 # See the License for the specific language governing permissions and limitations under the License.
 import logging
+import time
 
 import boto3
 import pytest
@@ -116,6 +117,8 @@ def _test_replace_compute_on_failure(cluster, region, scheduler_commands_factory
 
     # Wait for the instance to become running
     instances = wait_for_num_instances_in_queue(cluster.cfn_name, cluster.region, desired=1, queue=queue)
+
+    time.sleep(120)  # Wait time is required due to the ScaledownIdleTime
 
     wait_instance_replaced_or_terminating(instances[0], region)
 
