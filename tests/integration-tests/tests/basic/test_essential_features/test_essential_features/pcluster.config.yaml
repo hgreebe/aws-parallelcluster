@@ -59,7 +59,7 @@ Scheduling:
           {% endif %}
       Networking:
         SubnetIds:
-          - {{ public_subnet_id }}
+          - {{ private_subnet_id }}
       Iam:
         S3Access:
           - BucketName: {{ bucket_name }}
@@ -83,12 +83,10 @@ Scheduling:
           {% endif %}
       Networking:
         SubnetIds:
-          - {{ public_subnet_id }}
+          - {{ private_subnet_id }}
       Iam:
         S3Access:
           - BucketName: {{ bucket_name }}
-  SlurmSettings:
-    ScaledownIdletime: 2
 Monitoring:
   Logs:
     CloudWatch:
