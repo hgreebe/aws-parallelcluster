@@ -60,7 +60,7 @@ def test_essential_features(
     # We cannot use soft assertion for this test because "wait_" functions are relying on assertion failures for retries
     #_test_replace_compute_on_failure(cluster, region, scheduler_commands_factory)
 
-    _test_logging(cluster, scheduler_commands_factory, os, region)
+    _test_logging(cluster, scheduler_commands_factory, os, False, region)
 
     #_test_hit_disable_hyperthreading(cluster, region, instance, default_threads_per_core, scheduler_commands_factory,
     #                                 request, scheduler)
