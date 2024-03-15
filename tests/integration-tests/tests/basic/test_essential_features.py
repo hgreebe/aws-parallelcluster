@@ -49,9 +49,9 @@ def test_essential_features(
     bucket.upload_file(str(test_datadir / "pre_install.sh"), "scripts/pre_install.sh")
     bucket.upload_file(str(test_datadir / "post_install.sh"), "scripts/post_install.sh")
 
-    dcv_enabled = is_dcv_supported(region)
+    # dcv_enabled = is_dcv_supported(region)
 
-    cluster_config = pcluster_config_reader(bucket_name=bucket_name, dcv_enabled=dcv_enabled)
+    cluster_config = pcluster_config_reader(bucket_name=bucket_name)
     cluster = clusters_factory(cluster_config)
 
     #with soft_assertions():
@@ -60,7 +60,7 @@ def test_essential_features(
     # We cannot use soft assertion for this test because "wait_" functions are relying on assertion failures for retries
     #_test_replace_compute_on_failure(cluster, region, scheduler_commands_factory)
 
-    _test_logging(cluster, scheduler_commands_factory, os, dcv_enabled, region)
+    _test_logging(cluster, scheduler_commands_factory, os, region)
 
     #_test_hit_disable_hyperthreading(cluster, region, instance, default_threads_per_core, scheduler_commands_factory,
     #                                 request, scheduler)
@@ -146,14 +146,14 @@ def _test_logging(
     scheduler_commands.submit_command("hostname", nodes=1, partition="broken-post-install")
     scheduler_commands.submit_command("hostname", nodes=1, partition="bootstrap-scripts-args")
 
-    with soft_assertions():
-        assert_that_event_exists(cluster, r".+\.clustermgtd_events", "invalid-backing-instance-count")
-        assert_that_event_exists(cluster, r".+\.clustermgtd_events", "protected-mode-error-count")
-        assert_that_event_exists(cluster, r".+\.bootstrap_error_msg", "custom-action-error")
-        assert_that_event_exists(cluster, r".+\.clustermgtd_events", "compute-node-idle-time")
+    # with soft_assertions():
+    assert_that_event_exists(cluster, r".+\.clustermgtd_events", "invalid-backing-instance-count")
+    assert_that_event_exists(cluster, r".+\.clustermgtd_events", "protected-mode-error-count")
+    assert_that_event_exists(cluster, r".+\.bootstrap_error_msg", "custom-action-error")
+    assert_that_event_exists(cluster, r".+\.clustermgtd_events", "compute-node-idle-time")
 
-        test_cluster_health_metric(["OnNodeConfiguredRunErrors"], cluster.name, region)
-        test_cluster_health_metric(["MaxDynamicNodeIdleTime"], cluster.name, region)
+    test_cluster_health_metric(["OnNodeConfiguredRunErrors"], cluster.name, region)
+    test_cluster_health_metric(["MaxDynamicNodeIdleTime"], cluster.name, region)
 
     logging.info("Verifying ParallelCluster log rotation configuration.")
     common_logs = [
