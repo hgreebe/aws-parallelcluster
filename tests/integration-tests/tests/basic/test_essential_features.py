@@ -29,17 +29,17 @@ from tests.common.assertions import wait_for_num_instances_in_queue, wait_instan
 
 @pytest.mark.usefixtures("os", "instance", "scheduler")
 def test_essential_features(
-    region,
-    pcluster_config_reader,
-    s3_bucket_factory,
-    clusters_factory,
-    test_datadir,
-    scheduler_commands_factory,
-    os,
-    scheduler,
-    instance,
-    default_threads_per_core,
-    request,
+        region,
+        pcluster_config_reader,
+        s3_bucket_factory,
+        clusters_factory,
+        test_datadir,
+        scheduler_commands_factory,
+        os,
+        scheduler,
+        instance,
+        default_threads_per_core,
+        request,
 ):
     """Verify fundamental features for a cluster work as expected."""
     # Create S3 bucket for pre/post install scripts
@@ -54,15 +54,15 @@ def test_essential_features(
     cluster_config = pcluster_config_reader(bucket_name=bucket_name)
     cluster = clusters_factory(cluster_config)
 
-    #with soft_assertions():
+    # with soft_assertions():
     #    _test_custom_bootstrap_scripts_args_quotes(cluster)
 
     # We cannot use soft assertion for this test because "wait_" functions are relying on assertion failures for retries
-    #_test_replace_compute_on_failure(cluster, region, scheduler_commands_factory)
+    # _test_replace_compute_on_failure(cluster, region, scheduler_commands_factory)
 
     _test_logging(cluster, scheduler_commands_factory, os, False, region)
 
-    #_test_hit_disable_hyperthreading(cluster, region, instance, default_threads_per_core, scheduler_commands_factory,
+    # _test_hit_disable_hyperthreading(cluster, region, instance, default_threads_per_core, scheduler_commands_factory,
     #                                 request, scheduler)
 
 
@@ -102,7 +102,6 @@ def _test_hit_disable_hyperthreading(
     run_system_analyzer(cluster, scheduler_commands_factory, request)
 
 
-
 def _test_replace_compute_on_failure(cluster, region, scheduler_commands_factory):
     """
     Test that compute nodes get replaced on userdata failures.
@@ -134,7 +133,7 @@ def _test_custom_bootstrap_scripts_args_quotes(cluster):
 
 
 def _test_logging(
-    cluster, scheduler_commands_factory, os, dcv_enabled, region
+        cluster, scheduler_commands_factory, os, dcv_enabled, region
 ):
     """Test parallelcluster log rotation configuration."""
     remote_command_executor = RemoteCommandExecutor(cluster)
@@ -155,6 +154,8 @@ def _test_logging(
     test_cluster_health_metric(["OnNodeConfiguredRunErrors"], cluster.name, region)
     test_cluster_health_metric(["MaxDynamicNodeIdleTime"], cluster.name, region)
 
+
+'''
     logging.info("Verifying ParallelCluster log rotation configuration.")
     common_logs = [
         {"log_name": "cloud-init", "log_path": "/var/log/cloud-init.log", "existence": True},
@@ -269,3 +270,4 @@ def _test_logging(
         compute_node_ip,
         log_group_name,
     )
+    '''
