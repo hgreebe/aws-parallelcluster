@@ -217,7 +217,7 @@ phases:
                 apt-get -y --only-upgrade install ca-certificates
               fi
 
-              aws s3 cp {{ build.CincUrl.outputs.stdout }} - | bash -s -- -v {{ ChefVersion }} --region ${AWS::Region}
+              aws s3 --region ${AWS::Region} cp {{ build.CincUrl.outputs.stdout }} - | bash -s -- -v {{ ChefVersion }}
 
               if [[ -e ${!CA_CERTS_FILE} ]]; then
                 mkdir -p /opt/cinc/embedded/ssl/certs
