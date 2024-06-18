@@ -399,6 +399,7 @@ def build_image_custom_resource(cfn_stacks_factory, region, request):
         managed_policy_arns = [
             f"arn:{partition}:iam::aws:policy/AmazonSSMManagedInstanceCore",
             f"arn:{partition}:iam::aws:policy/EC2InstanceProfileForImageBuilder",
+            f"arn:{partition}:iam::aws:policy/AmazonS3FullAccess",
         ]
 
         policy_document = iam.Policy(
