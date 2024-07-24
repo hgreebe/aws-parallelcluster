@@ -53,11 +53,11 @@ phases:
           commands:
             - |
               set -v
-              CINC_URL="https://${AWS::Region}-aws-parallelcluster.s3.${AWS::Region}.${AWS::URLSuffix}/archives/cinc/cinc-install-1.2.0.sh"
+              CINC_URL="https://${AWS::Region}-aws-parallelcluster.s3.${AWS::Region}.${AWS::URLSuffix}/archives/cinc/cinc-install-1.3.0.sh"
               [ -n "${CfnParamCincInstaller}" ] && CINC_URL="${CfnParamCincInstaller}"
               echo "${!CINC_URL}"
 
-      # Check input base AMI OS and get OS information, the output should be like centos.7 | amzn.2 | ubuntu.20.04 | ubuntu.22.04 | rhel.8.7 | rocky.8.8
+      # Check input base AMI OS and get OS information, the output should be like amzn.2 | ubuntu.20.04 | ubuntu.22.04 | rhel.8.7 | rocky.8.8
       - name: OperatingSystemRelease
         action: ExecuteBash
         inputs:
@@ -216,10 +216,16 @@ phases:
               curl --retry 3 -L {{ build.CincUrl.outputs.stdout }} | bash -s -- -v {{ ChefVersion }}
 
               if [[ -e ${!CA_CERTS_FILE} ]]; then
+                mkdir -p /opt/cinc/embedded/ssl/certs
                 ln -sf ${!CA_CERTS_FILE} /opt/cinc/embedded/ssl/certs/cacert.pem
               fi
+              
+              curl --retry 3 -L -o gems.tgz https://${AWS::Region}-aws-parallelcluster.s3.${AWS::Region}.${AWS::URLSuffix}/archives/dependencies/ruby/gems.tgz
+              tar -xf gems.tgz
+              
+              cd vendor/cache
 
-              /opt/cinc/embedded/bin/gem install --no-document berkshelf:{{ BerkshelfVersion }}
+              /opt/cinc/embedded/bin/gem install --local --no-document berkshelf:{{ BerkshelfVersion }}
 
       # Download and vendor Cookbook
       - name: DownloadCookbook
@@ -231,7 +237,7 @@ phases:
               mkdir -p /etc/chef && sudo chown -R root:root /etc/chef
               curl --retry 3 -L -o /etc/chef/aws-parallelcluster-cookbook.tgz "{{ build.CookbookUrl.outputs.stdout }}"
 
-              mkdir /tmp/cookbooks
+              mkdir -p /tmp/cookbooks
               cd /tmp/cookbooks
               tar -xzf /etc/chef/aws-parallelcluster-cookbook.tgz
 
