@@ -57,6 +57,15 @@ phases:
               [ -n "${CfnParamCincInstaller}" ] && CINC_URL="${CfnParamCincInstaller}"
               echo "${!CINC_URL}"
 
+      # Get Ruby Dependencies URL
+      - name: RubyUrl
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+              set -v
+              echo "https://${AWS::Region}-aws-parallelcluster.s3.${AWS::Region}.${AWS::URLSuffix}/archives/dependencies/ruby/gems.tgz"
+
       # Check input base AMI OS and get OS information, the output should be like amzn.2 | ubuntu.20.04 | ubuntu.22.04 | rhel.8.7 | rocky.8.8
       - name: OperatingSystemRelease
         action: ExecuteBash
@@ -220,7 +229,7 @@ phases:
                 ln -sf ${!CA_CERTS_FILE} /opt/cinc/embedded/ssl/certs/cacert.pem
               fi
               
-              curl --retry 3 -L -o gems.tgz https://${AWS::Region}-aws-parallelcluster.s3.${AWS::Region}.${AWS::URLSuffix}/archives/dependencies/ruby/gems.tgz
+              curl --retry 3 -L -o gems.tgz {{ build.RubyUrl.outputs.stdout }}
               tar -xf gems.tgz
               
               cd vendor/cache
