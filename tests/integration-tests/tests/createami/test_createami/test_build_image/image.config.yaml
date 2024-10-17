@@ -14,8 +14,8 @@ Build:
     Tags:
         - Key: dummyBuildTag
           Value: dummyBuildTag
-#    UpdateOsPackages:
-#        Enabled: true
+    UpdateOsPackages:
+        Enabled: true
 
 CustomS3Bucket: {{ bucket_name }}
 
