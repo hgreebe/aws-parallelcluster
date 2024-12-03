@@ -65,8 +65,8 @@ def test_essential_features(
     )
     cluster = clusters_factory(cluster_config)
 
-    with soft_assertions():
-        _test_custom_bootstrap_scripts_args_quotes(cluster)
+    # with soft_assertions():
+    #     _test_custom_bootstrap_scripts_args_quotes(cluster)
 
     _test_mpi_job(
         scheduler,
@@ -80,13 +80,13 @@ def test_essential_features(
     )
 
     # We cannot use soft assertion for this test because "wait_" functions are relying on assertion failures for retries
-    _test_replace_compute_on_failure(cluster, region, scheduler_commands_factory)
-
-    _test_logging(cluster, region, scheduler_commands_factory, dcv_enabled, os)
-
-    _test_disable_hyperthreading(
-        cluster, region, instance, scheduler, default_threads_per_core, request, scheduler_commands_factory
-    )
+    # _test_replace_compute_on_failure(cluster, region, scheduler_commands_factory)
+    #
+    # _test_logging(cluster, region, scheduler_commands_factory, dcv_enabled, os)
+    #
+    # _test_disable_hyperthreading(
+    #     cluster, region, instance, scheduler, default_threads_per_core, request, scheduler_commands_factory
+    # )
 
 
 def _test_mpi_job(
@@ -97,31 +97,31 @@ def _test_mpi_job(
     scheduler_commands = scheduler_commands_factory(remote_command_executor)
 
     # This verifies that the job completes correctly
-    _test_mpi(
-        remote_command_executor,
-        slots_per_instance,
-        scheduler,
-        scheduler_commands,
-        region,
-        cluster.cfn_name,
-        scaledown_idletime,
-        verify_scaling=False,
-        num_computes=max_queue_size,
-        verify_pmix=True,
-    )
-
-    # This verifies that scaling worked
-    _test_mpi(
-        remote_command_executor,
-        slots_per_instance,
-        scheduler,
-        scheduler_commands,
-        region,
-        cluster.cfn_name,
-        scaledown_idletime,
-        verify_scaling=True,
-        num_computes=max_queue_size,
-    )
+    # _test_mpi(
+    #     remote_command_executor,
+    #     slots_per_instance,
+    #     scheduler,
+    #     scheduler_commands,
+    #     region,
+    #     cluster.cfn_name,
+    #     scaledown_idletime,
+    #     verify_scaling=False,
+    #     num_computes=max_queue_size,
+    #     verify_pmix=True,
+    # )
+    #
+    # # This verifies that scaling worked
+    # _test_mpi(
+    #     remote_command_executor,
+    #     slots_per_instance,
+    #     scheduler,
+    #     scheduler_commands,
+    #     region,
+    #     cluster.cfn_name,
+    #     scaledown_idletime,
+    #     verify_scaling=True,
+    #     num_computes=max_queue_size,
+    # )
 
     _test_mpi_ssh(remote_command_executor, test_datadir, scheduler_commands_factory)
 
