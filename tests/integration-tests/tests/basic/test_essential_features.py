@@ -150,6 +150,12 @@ def _test_mpi_ssh(remote_command_executor, test_datadir, scheduler_commands_fact
     assert_that(len(mpirun_out_ip)).is_greater_than_or_equal_to(3)
     assert_that(mpirun_out_ip[-1]).is_equal_to(remote_host)
 
+    mpirun_out_ip = remote_command_executor.run_remote_script(
+        str(test_datadir / "mpi_ssh.sh"), args=[mpi_module, remote_host_ip], timeout=20
+    ).stdout.splitlines()
+    assert_that(len(mpirun_out_ip)).is_greater_than_or_equal_to(3)
+    assert_that(mpirun_out_ip[-1]).is_equal_to(remote_host)
+
     mpirun_out = remote_command_executor.run_remote_script(
         str(test_datadir / "mpi_ssh.sh"), args=[mpi_module, remote_host], timeout=20
     ).stdout.splitlines()
