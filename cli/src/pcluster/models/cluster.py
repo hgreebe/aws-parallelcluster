@@ -162,6 +162,7 @@ class Cluster:
     """Represent a running cluster, composed by a ClusterConfig and a ClusterStack."""
 
     def __init__(self, name: str, config: str = None, stack: ClusterStack = None):
+        self.create = None
         self.name = name
         self.__source_config_text = config
         self.__stack = stack
@@ -257,7 +258,12 @@ class Cluster:
         """Return ClusterConfig object."""
         if not self.__config:
             try:
-                self.__config = self._load_config(parse_config(self.source_config_text))
+                if not self.create:
+                    schema = ClusterSchema(cluster_name=self.name)
+                    schema.source_config = parse_config(self.source_config_text)
+                    self.__config = schema
+                else:
+                    self.__config = self._load_config(parse_config(self.source_config_text))
             except ConfigValidationError as exc:
                 raise exc
             except Exception as e:
@@ -362,6 +368,7 @@ class Cluster:
         start_cdk_import()
         creation_result = None
         artifact_dir_generated = False
+        self.create = True
         try:
             suppressed_validation_failures = self.validate_create_request(
                 validator_suppressors, validation_failure_level
