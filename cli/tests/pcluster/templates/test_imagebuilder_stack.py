@@ -61,6 +61,7 @@ from tests.pcluster.utils import assert_lambdas_have_expected_vpc_config_and_man
                     "CfnParamCincInstaller": {},
                     "CfnParamCookbookVersion": {},
                     "CfnParamUpdateOsAndReboot": {},
+                    "BootstrapVersion": {},
                     "CfnParamIsOfficialAmiBuild": {},
                 },
                 "Resources": {
@@ -112,6 +113,7 @@ from tests.pcluster.utils import assert_lambdas_have_expected_vpc_config_and_man
                     "CfnParamCincInstaller": {},
                     "CfnParamCookbookVersion": {},
                     "CfnParamUpdateOsAndReboot": {},
+                    "BootstrapVersion": {},
                     "CfnParamIsOfficialAmiBuild": {},
                 },
                 "Resources": {
@@ -163,6 +165,7 @@ from tests.pcluster.utils import assert_lambdas_have_expected_vpc_config_and_man
                     "CfnParamCincInstaller": {},
                     "CfnParamCookbookVersion": {},
                     "CfnParamUpdateOsAndReboot": {},
+                    "BootstrapVersion": {},
                     "CfnParamIsOfficialAmiBuild": {},
                 },
                 "Resources": {
@@ -212,6 +215,7 @@ from tests.pcluster.utils import assert_lambdas_have_expected_vpc_config_and_man
                     "CfnParamCincInstaller": {},
                     "CfnParamCookbookVersion": {},
                     "CfnParamUpdateOsAndReboot": {},
+                    "BootstrapVersion": {},
                     "CfnParamIsOfficialAmiBuild": {},
                 },
                 "Resources": {
@@ -262,6 +266,7 @@ from tests.pcluster.utils import assert_lambdas_have_expected_vpc_config_and_man
                     "CfnParamCincInstaller": {},
                     "CfnParamCookbookVersion": {},
                     "CfnParamUpdateOsAndReboot": {},
+                    "BootstrapVersion": {},
                     "CfnParamIsOfficialAmiBuild": {},
                 },
                 "Resources": {
@@ -311,6 +316,7 @@ from tests.pcluster.utils import assert_lambdas_have_expected_vpc_config_and_man
                     "CfnParamCincInstaller": {},
                     "CfnParamCookbookVersion": {},
                     "CfnParamUpdateOsAndReboot": {},
+                    "BootstrapVersion": {},
                     "CfnParamIsOfficialAmiBuild": {},
                 },
                 "Resources": {
@@ -359,6 +365,7 @@ from tests.pcluster.utils import assert_lambdas_have_expected_vpc_config_and_man
                     "CfnParamCincInstaller": {},
                     "CfnParamCookbookVersion": {},
                     "CfnParamUpdateOsAndReboot": {},
+                    "BootstrapVersion": {},
                     "CfnParamIsOfficialAmiBuild": {},
                 },
                 "Resources": {
@@ -409,6 +416,7 @@ from tests.pcluster.utils import assert_lambdas_have_expected_vpc_config_and_man
                     "CfnParamCincInstaller": {},
                     "CfnParamCookbookVersion": {},
                     "CfnParamUpdateOsAndReboot": {},
+                    "BootstrapVersion": {},
                     "CfnParamIsOfficialAmiBuild": {},
                 },
                 "Resources": {
@@ -458,6 +466,7 @@ from tests.pcluster.utils import assert_lambdas_have_expected_vpc_config_and_man
                     "CfnParamCincInstaller": {},
                     "CfnParamCookbookVersion": {},
                     "CfnParamUpdateOsAndReboot": {},
+                    "BootstrapVersion": {},
                     "CfnParamIsOfficialAmiBuild": {},
                 },
                 "Resources": {
@@ -515,6 +524,7 @@ from tests.pcluster.utils import assert_lambdas_have_expected_vpc_config_and_man
                     "CfnParamCincInstaller": {},
                     "CfnParamCookbookVersion": {},
                     "CfnParamUpdateOsAndReboot": {},
+                    "BootstrapVersion": {},
                     "CfnParamIsOfficialAmiBuild": {},
                 },
                 "Resources": {
@@ -565,6 +575,7 @@ from tests.pcluster.utils import assert_lambdas_have_expected_vpc_config_and_man
                     "CfnParamCincInstaller": {},
                     "CfnParamCookbookVersion": {},
                     "CfnParamUpdateOsAndReboot": {},
+                    "BootstrapVersion": {},
                     "CfnParamIsOfficialAmiBuild": {},
                 },
                 "Resources": {
@@ -614,6 +625,7 @@ from tests.pcluster.utils import assert_lambdas_have_expected_vpc_config_and_man
                     "CfnParamCincInstaller": {},
                     "CfnParamCookbookVersion": {},
                     "CfnParamUpdateOsAndReboot": {},
+                    "BootstrapVersion": {},
                     "CfnParamIsOfficialAmiBuild": {},
                 },
                 "Resources": {
@@ -663,6 +675,7 @@ from tests.pcluster.utils import assert_lambdas_have_expected_vpc_config_and_man
                     "CfnParamCincInstaller": {},
                     "CfnParamCookbookVersion": {},
                     "CfnParamUpdateOsAndReboot": {},
+                    "BootstrapVersion": {},
                     "CfnParamIsOfficialAmiBuild": {},
                 },
                 "Resources": {

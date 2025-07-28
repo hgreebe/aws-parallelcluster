@@ -15,13 +15,13 @@ from hashlib import sha1, sha256
 from importlib.resources import files  # nosemgrep: python.lang.compatibility.python37.python37-compatibility-importlib2
 from typing import List, Union
 
+from aws_cdk import CfnDeletionPolicy, CfnTag, Fn, Stack
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_lambda as awslambda
 from aws_cdk import aws_logs as logs
-from aws_cdk import core
 from aws_cdk.aws_iam import ManagedPolicy, PermissionsBoundary
-from aws_cdk.core import Arn, ArnFormat, CfnDeletionPolicy, CfnTag, Construct, Fn, Stack
+from constructs import Construct
 
 from pcluster.config.cluster_config import (
     BaseClusterConfig,

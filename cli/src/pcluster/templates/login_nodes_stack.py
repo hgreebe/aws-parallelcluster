@@ -1,11 +1,12 @@
 import json
 from typing import Dict
 
+from aws_cdk import CfnTag, Fn, NestedStack, Stack, Tags
 from aws_cdk import aws_autoscaling as autoscaling
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_elasticloadbalancingv2 as elbv2
 from aws_cdk import aws_logs as logs
-from aws_cdk.core import CfnTag, Construct, Fn, NestedStack, Stack, Tags
+from constructs import Construct
 
 from pcluster.aws.aws_api import AWSApi
 from pcluster.config.cluster_config import LoginNodesPool, SlurmClusterConfig

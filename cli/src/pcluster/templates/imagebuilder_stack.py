@@ -20,12 +20,13 @@ import json
 import os
 
 import yaml
+from aws_cdk import ArnFormat, CfnParameter, CfnTag, Fn, Stack
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_imagebuilder as imagebuilder
 from aws_cdk import aws_lambda as awslambda
 from aws_cdk import aws_logs as logs
 from aws_cdk import aws_sns as sns
-from aws_cdk.core import CfnParameter, CfnTag, Construct, Fn, Stack
+from constructs import Construct
 
 from pcluster import imagebuilder_utils, utils
 from pcluster.aws.aws_api import AWSApi
@@ -121,7 +122,7 @@ class ImageBuilderCdkStack(Stack):
             service="logs",
             resource="log-group",
             region=get_region(),
-            sep=":",
+            arn_format=ArnFormat.COLON_RESOURCE_NAME,
             resource_name=f"/aws/imagebuilder/{self._build_image_recipe_name()}",
         )
         return log_group_arn
@@ -517,7 +518,7 @@ class ImageBuilderCdkStack(Stack):
             function_name=lambda_cleanup.attr_arn,
             source_arn=Fn.ref("BuildNotificationTopic"),
         )
-        lambda_cleanup.add_depends_on(lambda_log)
+        lambda_cleanup.add_dependency(lambda_log)
 
         # No stack-local execution role created; return None placeholder
         return lambda_cleanup, permission, lambda_log

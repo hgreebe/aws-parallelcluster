@@ -19,6 +19,8 @@ from pcluster.config.cluster_config import BaseClusterConfig
 from pcluster.config.imagebuilder_config import ImageBuilderConfig
 from pcluster.models.s3_bucket import S3Bucket
 from pcluster.utils import load_yaml_dict
+from aws_cdk import LegacyStackSynthesizer
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -32,7 +34,7 @@ class CDKTemplateBuilder:
     ):
         """Build template for the given cluster and return as output in Yaml format."""
         LOGGER.info("Importing CDK...")
-        from aws_cdk.core import App  # pylint: disable=C0415
+        from aws_cdk import App  # pylint: disable=C0415
 
         # CDK import must be inside the redirect_stdouterr_to_logger contextmanager
         from pcluster.templates.cdk_artifacts_manager import CDKArtifactsManager  # pylint: disable=C0415
@@ -42,7 +44,8 @@ class CDKTemplateBuilder:
         LOGGER.info("Starting CDK template generation...")
         with tempfile.TemporaryDirectory() as cloud_assembly_dir:
             output_file = str(stack_name)
-            app = App(outdir=str(cloud_assembly_dir))
+            # Using legacy synthesizer because queue substacks rely on the template format from the legacy synthesizer
+            app = App(outdir=str(cloud_assembly_dir), default_stack_synthesizer=LegacyStackSynthesizer())
             ClusterCdkStack(app, output_file, stack_name, cluster_config, bucket, log_group_name)
 
             cloud_assembly = app.synth()
@@ -57,13 +60,14 @@ class CDKTemplateBuilder:
     @staticmethod
     def build_imagebuilder_template(image_config: ImageBuilderConfig, image_id: str, bucket: S3Bucket):
         """Build template for the given imagebuilder and return as output in Yaml format."""
-        from aws_cdk.core import App  # pylint: disable=C0415
+        from aws_cdk import App  # pylint: disable=C0415
 
         from pcluster.templates.imagebuilder_stack import ImageBuilderCdkStack  # pylint: disable=C0415
 
         with tempfile.TemporaryDirectory() as tempdir:
             output_file = "imagebuilder"
-            app = App(outdir=str(tempdir))
+            # Using legacy synthesizer because queue substacks rely on the template format from the legacy synthesizer
+            app = App(outdir=str(tempdir), default_stack_synthesizer=LegacyStackSynthesizer())
             ImageBuilderCdkStack(app, output_file, image_config, image_id, bucket)
             app.synth()
             generated_template = load_yaml_dict(os.path.join(tempdir, f"{output_file}.template.json"))
