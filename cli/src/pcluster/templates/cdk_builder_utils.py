@@ -15,7 +15,7 @@ from hashlib import sha1, sha256
 from importlib.resources import files  # nosemgrep: python.lang.compatibility.python37.python37-compatibility-importlib2
 from typing import List, Union
 
-from aws_cdk import CfnDeletionPolicy, CfnTag, Fn, Stack
+from aws_cdk import CfnDeletionPolicy, CfnTag, Fn, Stack, Aws
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_lambda as awslambda
@@ -667,7 +667,7 @@ class HeadNodeIamResources(NodeIamResourcesBase):
                     "cloudformation:SignalResource",
                 ],
                 effect=iam.Effect.ALLOW,
-                resources=[core.Aws.STACK_ID],
+                resources=[Aws.STACK_ID],
             ),
             iam.PolicyStatement(
                 sid="DcvLicense",
@@ -954,7 +954,7 @@ class LoginNodesIamResources(NodeIamResourcesBase):
                         region=Stack.of(self).region,
                         account=Stack.of(self).account,
                     ),
-                    core.Aws.STACK_ID,
+                    Aws.STACK_ID,
                 ],
             ),
             iam.PolicyStatement(
@@ -1029,7 +1029,7 @@ class ComputeNodeIamResources(NodeIamResourcesBase):
                     "cloudformation:DescribeStackResource",
                 ],
                 effect=iam.Effect.ALLOW,
-                resources=[core.Aws.STACK_ID],
+                resources=[Aws.STACK_ID],
             ),
             iam.PolicyStatement(
                 sid="DynamoDBTable",
