@@ -1,5 +1,5 @@
-aws-cdk-lib~=2.61.1
-aws-xray-sdk~=2.11.0
+aws-cdk-lib~=2.208.0
+aws-xray-sdk~=2.14.0
 constructs~=10.1.225
 boto3>=1.16.14
 connexion~=2.13.0
