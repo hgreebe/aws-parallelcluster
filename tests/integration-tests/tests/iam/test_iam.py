@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and limitations under the License.
 import logging
 import os as os_lib
+import time
 from shutil import copyfile
 
 import boto3
@@ -47,6 +48,7 @@ def test_iam_roles(
     compute_instance_profile, compute_instance_role, head_instance_role, lambda_role = _create_cluster_roles(
         create_roles_stack, "integ-tests-iam-cluster-roles", "cluster-roles.cfn.yaml", is_awsbatch
     )
+    time.sleep(180)
 
     create_config, update_config = _get_config_create_and_update(test_datadir)
 
