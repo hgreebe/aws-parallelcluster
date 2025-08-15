@@ -175,6 +175,10 @@ Resources:
                 Effect: Allow
                 Resource:
                   - !Sub arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/*/*
+              - Action: sts:AssumeRole
+                Effect: Allow
+                Resource:
+                  - !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/parallelcluster/*
             Version: '2012-10-17'
     Type: AWS::IAM::Role
 
