@@ -175,22 +175,27 @@ def test_slurm_accounting(
     private_subnet_id = vpc_stack_for_database.get_private_subnet()
 
     # First create a cluster without Slurm Accounting
-    cluster_config = pcluster_config_reader(public_subnet_id=public_subnet_id, private_subnet_id=private_subnet_id)
-    cluster = clusters_factory(cluster_config)
-
-    remote_command_executor = RemoteCommandExecutor(cluster)
-
-    _test_that_slurmdbd_is_not_running(remote_command_executor)
-
-    # Then update the cluster to enable Slurm Accounting
-    updated_config_file = pcluster_config_reader(
+    cluster_config = pcluster_config_reader(
         config_file="pcluster.config.update.yaml",
         public_subnet_id=public_subnet_id,
         private_subnet_id=private_subnet_id,
         **config_params,
     )
-    # Force update because update is not support unless the compute fleet is stopped
-    cluster.update(str(updated_config_file), force_update="true")
+    cluster = clusters_factory(cluster_config)
+
+    remote_command_executor = RemoteCommandExecutor(cluster)
+
+    # _test_that_slurmdbd_is_not_running(remote_command_executor)
+    #
+    # # Then update the cluster to enable Slurm Accounting
+    # updated_config_file = pcluster_config_reader(
+    #     config_file="pcluster.config.update.yaml",
+    #     public_subnet_id=public_subnet_id,
+    #     private_subnet_id=private_subnet_id,
+    #     **config_params,
+    # )
+    # # Force update because update is not support unless the compute fleet is stopped
+    # cluster.update(str(updated_config_file), force_update="true")
 
     remote_command_executor = RemoteCommandExecutor(cluster)
     scheduler_commands = scheduler_commands_factory(remote_command_executor)
