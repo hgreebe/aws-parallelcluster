@@ -1,7 +1,7 @@
 Image:
   Os: {{ os }}
 HeadNode:
-  InstanceType: m6g.xlarge
+  InstanceType: c6g.xlarge
   Networking:
     SubnetId: {{ public_subnet_id }}
   Ssh:
@@ -41,7 +41,11 @@ Scheduling:
   - Name: {{ queue_without_imex }}
     ComputeResources:
       - Name: {{ compute_resource_without_imex }}
-        InstanceType: m6g.xlarge
+        Instances:
+          - InstanceType: m6g.xlarge
+          - InstanceType: t4g.xlarge
+          - InstanceType: c6dg.xlarge
+          - InstanceType: c6gn.xlarge
         MinCount: 1
         MaxCount: 1
     Networking:

@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and limitations under the License.
 import json
 import logging
+import time
 from datetime import datetime
 
 import boto3
@@ -27,7 +28,7 @@ from tests.common.utils import is_existing_remote_file, read_remote_file, termin
 # This is the capacity block reservation for p6e-gb200.36xlarge.
 # Given the limited availability of this capacity we test this instance type on demand,
 # hardwiring the reservation id here when we need it.
-CAPACITY_BLOCK_RESERVATION_ID = "cr-123456789"
+CAPACITY_BLOCK_RESERVATION_ID = "cr-0e1ef350237e7911f"
 
 # We use placeholder IPs just to get IMEX started.
 # These values are hardwired in the cookbook.
@@ -357,6 +358,7 @@ def test_gb200(
     This is a reasonable approximation for the test because the focus of the test is on IMEX and topology configuration,
     which can be executed on g4dn as well.
     """
+    time.sleep(10*60)
     max_queue_size = 2
     capacity_block_reservation_id = CAPACITY_BLOCK_RESERVATION_ID if instance == "p6e-gb200.36xlarge" else None
 
