@@ -180,6 +180,16 @@ phases:
                   echo "Kernel version locked"
                 fi
               fi
+              
+              if [[ ${!PLATFORM} == DEBIAN ]]; then
+                apt-get -y install $(apt list linux-image-6.8.*-aws 2>/dev/null | grep -v WARNING | tail -1 | cut -d' ' -f1 | cut -d'/' -f1)
+                apt-get -y install $(apt list linux-aws-6.8.* 2>/dev/null | grep -v WARNING | tail -1 | cut -d' ' -f1 | cut -d'/' -f1)
+                apt-get -y install $(apt list linux-image-aws-6.8.* 2>/dev/null | grep -v WARNING | tail -1 | cut -d' ' -f1 | cut -d'/' -f1)
+                apt-get -y install $(apt list linux-aws-headers-6.8.* 2>/dev/null | grep -v WARNING | tail -1 | cut -d' ' -f1 | cut -d'/' -f1)
+
+
+                apt-mark hold linux-aws* linux-image* 
+              fi
 
       - name: UpdateOS
         action: ExecuteBash
