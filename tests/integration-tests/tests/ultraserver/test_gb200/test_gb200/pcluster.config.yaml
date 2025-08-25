@@ -44,7 +44,6 @@ Scheduling:
         Instances:
           - InstanceType: m6g.xlarge
           - InstanceType: t4g.xlarge
-          - InstanceType: c6dg.xlarge
           - InstanceType: c6gn.xlarge
         MinCount: 1
         MaxCount: 1
