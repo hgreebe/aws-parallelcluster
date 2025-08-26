@@ -17,15 +17,19 @@ from datetime import datetime
 import boto3
 from time_utils import seconds
 import pytest
+import xmltodict
 from assertpy import assert_that, soft_assertions
 from clusters_factory import Cluster
 from remote_command_executor import RemoteCommandExecutor
+from tests.common.mpi_common import _test_mpi
+from tests.efa.test_efa import FABTESTS_BASIC_TESTS, FABTESTS_GDRCOPY_TESTS
+from utils import wait_for_computefleet_changed, get_compute_nodes_instance_ids
 from retrying import retry
-from utils import wait_for_computefleet_changed
 
 from tests.common.assertions import assert_regex_in_file, wait_for_instances_in_compute_resource
 from tests.common.schedulers_common import SlurmCommands
-from tests.common.utils import is_existing_remote_file, read_remote_file, terminate_nodes_manually
+from tests.common.utils import is_existing_remote_file, read_remote_file, terminate_nodes_manually, \
+    wait_process_completion, fetch_instance_slots
 
 # This is the capacity block reservation for p6e-gb200.36xlarge.
 # Given the limited availability of this capacity we test this instance type on demand,
@@ -326,9 +330,9 @@ def assert_topology_plugin_completely_disabled(cluster: Cluster):
     logging.info("TopologyPlugin correctly completely disabled")
 
 
-@pytest.mark.usefixtures("region", "os", "instance", "scheduler")
+@pytest.mark.usefixtures("os")
 def test_gb200(
-    pcluster_config_reader, file_reader, clusters_factory, test_datadir, s3_bucket_factory, region, instance
+    pcluster_config_reader, file_reader, clusters_factory, test_datadir, s3_bucket_factory, region, instance, scheduler
 ):
     """
     Test automated configuration of Nvidia IMEX and Slurm topology plugin.
@@ -399,7 +403,19 @@ def test_gb200(
         compute_resource_without_imex=compute_resource_without_imex,
         capacity_block_reservation_id=capacity_block_reservation_id,
     )
+    slots_per_instance = fetch_instance_slots(region, instance, multithreading_disabled=True)
     cluster = clusters_factory(cluster_config)
+    remote_command_executor = RemoteCommandExecutor(cluster)
+    scheduler_commands = scheduler_commands_factory(remote_command_executor)
+
+    _test_efa_installation(scheduler_commands, remote_command_executor, efa_installed=True, partition="q1")
+    _test_mpi(remote_command_executor, slots_per_instance, scheduler, scheduler_commands, partition="q1")
+    logging.info("Running on Instances: {0}".format(get_compute_nodes_instance_ids(cluster.cfn_name, region)))
+
+    _test_shm_transfer_is_enabled(scheduler_commands, remote_command_executor, partition="q1")
+
+    if instance in ["p4d.24xlarge", "p5.48xlarge"]:
+        _test_nccl_benchmarks(remote_command_executor, test_datadir, "openmpi", scheduler_commands, instance)
 
     # Test IMEX and topology configuration for queue with IMEX support
     assert_imex_healthy(cluster, queue_with_imex, compute_resource_with_imex, max_queue_size)

@@ -48,18 +48,6 @@ Scheduling:
       {% endif %}
       SubnetIds:
         - {{ private_subnet_id }}
-  - Name: {{ queue_without_imex }}
-    ComputeResources:
-      - Name: {{ compute_resource_without_imex }}
-        Instances:
-          - InstanceType: m6g.xlarge
-          - InstanceType: t4g.xlarge
-          - InstanceType: c6gn.xlarge
-        MinCount: {{ max_queue_size_without_imex }}
-        MaxCount: 1
-    Networking:
-      SubnetIds:
-        - {{ private_subnet_id }}
 
 # The DevSetting below forces the configuration of NVIDIA IMEX and topology plugin on instances that are not GB200.
 # We do it to simulate the behavior of GB200 instances.
