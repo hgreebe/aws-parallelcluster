@@ -34,7 +34,7 @@ from tests.common.utils import is_existing_remote_file, read_remote_file, termin
 # This is the capacity block reservation for p6e-gb200.36xlarge.
 # Given the limited availability of this capacity we test this instance type on demand,
 # hardwiring the reservation id here when we need it.
-CAPACITY_BLOCK_RESERVATION_ID = "cr-0e1ef350237e7911f"
+CAPACITY_BLOCK_RESERVATION_ID = "cr-0e5085200ee2f7f67"
 
 # We use placeholder IPs just to get IMEX started.
 # These values are hardwired in the cookbook.
