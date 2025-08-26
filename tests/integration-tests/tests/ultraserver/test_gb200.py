@@ -414,8 +414,8 @@ def test_gb200(
 
     _test_shm_transfer_is_enabled(scheduler_commands, remote_command_executor, partition="q1")
 
-    if instance in ["p4d.24xlarge", "p5.48xlarge"]:
-        _test_nccl_benchmarks(remote_command_executor, test_datadir, "openmpi", scheduler_commands, instance)
+
+    _test_nccl_benchmarks(remote_command_executor, test_datadir, "openmpi", scheduler_commands, instance)
 
     # Test IMEX and topology configuration for queue with IMEX support
     assert_imex_healthy(cluster, queue_with_imex, compute_resource_with_imex, max_queue_size)
