@@ -360,6 +360,7 @@ def test_gb200(
     """
     time.sleep(10*60)
     max_queue_size = 2
+    max_queue_size_without_imex = 1 if instance != "p6e-gb200.36xlarge" else 0
     capacity_block_reservation_id = CAPACITY_BLOCK_RESERVATION_ID if instance == "p6e-gb200.36xlarge" else None
 
     # Create an S3 bucket for custom action scripts
@@ -390,6 +391,7 @@ def test_gb200(
         bucket_name=bucket_name,
         head_node_start_script=headnode_start_filename,
         max_queue_size=max_queue_size,
+        max_queue_size_without_imex=max_queue_size_without_imex,
         queue_with_imex=queue_with_imex,
         compute_resource_with_imex=compute_resource_with_imex,
         queue_without_imex=queue_without_imex,
@@ -406,7 +408,10 @@ def test_gb200(
 
     # Test that IMEX and topology are not configured for queue without IMEX support
     with soft_assertions():
-        assert_imex_not_configured(cluster, queue_without_imex, compute_resource_without_imex)
+        # We enable nvidia-imex force_configuration only for non-gb200 instances, so we should assert these checks with same condition
+        if instance != "p6e-gb200.36xlarge":
+            assert_imex_not_configured(cluster, queue_without_imex, compute_resource_without_imex)
+        # Topology Plugin is Cluster wide setup so we check if compute_resource_without_imex is not in that file
         assert_topology_plugin_not_configured_for_queue(cluster, queue_without_imex, compute_resource_without_imex)
 
     # Test cluster update with changed topology configuration
@@ -415,6 +420,7 @@ def test_gb200(
         config_file="pcluster.config.update.yaml",
         bucket_name=bucket_name,
         head_node_start_script=headnode_start_filename,
+        max_queue_size_without_imex=max_queue_size_without_imex,
         max_queue_size=max_queue_size_updated,
         queue_with_imex=queue_with_imex,
         compute_resource_with_imex=compute_resource_with_imex,
@@ -438,7 +444,8 @@ def test_gb200(
         cluster, queue_with_imex, compute_resource_with_imex, f"{max_queue_size_updated}", max_queue_size_updated
     )
     with soft_assertions():
-        assert_imex_not_configured(cluster, queue_without_imex, compute_resource_without_imex)
+        if instance != "p6e-gb200.36xlarge":
+            assert_imex_not_configured(cluster, queue_without_imex, compute_resource_without_imex)
         assert_topology_plugin_not_configured_for_queue(cluster, queue_without_imex, compute_resource_without_imex)
 
     # Forcefully terminate a compute node in the compute resource supporting IMEX
@@ -460,6 +467,7 @@ def test_gb200(
         bucket_name=bucket_name,
         head_node_start_script=headnode_start_filename,
         max_queue_size=max_queue_size_updated,
+        max_queue_size_without_imex=max_queue_size_without_imex,
         queue_with_imex=queue_with_imex,
         compute_resource_with_imex=compute_resource_with_imex,
         queue_without_imex=queue_without_imex,
@@ -473,9 +481,11 @@ def test_gb200(
     wait_for_computefleet_changed(cluster, "RUNNING")
 
     # Verify topology plugin is completely disabled after removing force_configuration
-    assert_topology_plugin_completely_disabled(cluster)
+    if instance != "p6e-gb200.36xlarge":
+        assert_topology_plugin_completely_disabled(cluster)
 
     # Verify IMEX still works but topology is completely removed
     assert_imex_healthy(cluster, queue_with_imex, compute_resource_with_imex, max_queue_size_updated)
     with soft_assertions():
-        assert_imex_not_configured(cluster, queue_without_imex, compute_resource_without_imex)
+        if instance != "p6e-gb200.36xlarge":
+            assert_imex_not_configured(cluster, queue_without_imex, compute_resource_without_imex)
