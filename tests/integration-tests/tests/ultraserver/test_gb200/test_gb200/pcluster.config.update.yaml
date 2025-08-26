@@ -32,9 +32,9 @@ Scheduling:
         {% endif %}
         MinCount: {{ max_queue_size }}
         MaxCount: {{ max_queue_size }}
-        HealthChecks:
-          Gpu:
-            Enabled: True
+#        HealthChecks:
+#          Gpu:
+#            Enabled: True
     Networking:
       SubnetIds:
         - {{ private_subnet_id }}
