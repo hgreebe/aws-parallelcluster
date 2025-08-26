@@ -847,10 +847,10 @@ def _get_config_arguments(args):
 def _check_args(args):
     # If --cluster is set only one os, scheduler, instance type and region can be provided
     if args.cluster:
-        if len(args.oss) > 1 or len(args.schedulers) > 1 or len(args.instances) > 1 or len(args.regions) > 1:
+        if len(args.oss) >= 1 or len(args.schedulers) >= 1 or len(args.instances) >= 1 or len(args.regions) >= 1:
             logger.error(
-                "when cluster option is specified, you can have a single value for oss, regions, instances "
-                "and schedulers and you need to make sure they match the cluster specific ones"
+                "when cluster option is specified, you can have a single value for oss {0}, regions {1}, instances {2}"
+                "and schedulers {3} and you need to make sure they match the cluster specific ones".format(len(args.oss),len(args.regions), len(args.instances), len(args.schedulers))
             )
             exit(1)
 
