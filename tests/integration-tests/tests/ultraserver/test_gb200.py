@@ -332,7 +332,7 @@ def assert_topology_plugin_completely_disabled(cluster: Cluster):
 
 @pytest.mark.usefixtures("os")
 def test_gb200(
-    pcluster_config_reader, file_reader, clusters_factory, test_datadir, s3_bucket_factory, region, instance, scheduler
+    pcluster_config_reader, file_reader, clusters_factory, test_datadir, s3_bucket_factory, region, instance, scheduler, scheduler_commands_factory
 ):
     """
     Test automated configuration of Nvidia IMEX and Slurm topology plugin.
