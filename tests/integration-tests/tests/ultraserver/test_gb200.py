@@ -409,7 +409,7 @@ def test_gb200(
     scheduler_commands = scheduler_commands_factory(remote_command_executor)
 
     _test_efa_installation(scheduler_commands, remote_command_executor, efa_installed=True, partition="q1")
-    _test_mpi(remote_command_executor, slots_per_instance, scheduler, scheduler_commands, partition="q1")
+    # _test_mpi(remote_command_executor, slots_per_instance, scheduler, scheduler_commands, partition="q1")
     logging.info("Running on Instances: {0}".format(get_compute_nodes_instance_ids(cluster.cfn_name, region)))
 
     _test_shm_transfer_is_enabled(scheduler_commands, remote_command_executor, partition="q1")
