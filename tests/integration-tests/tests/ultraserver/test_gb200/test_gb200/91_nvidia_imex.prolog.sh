@@ -8,7 +8,7 @@ DNA_JSON_FILE="/etc/chef/dna.json"
 SCONTROL_CMD="/opt/slurm/bin/scontrol"
 IMEX_START_TIMEOUT=60
 IMEX_STOP_TIMEOUT=15
-WAIT_TIME_TO_STABILIZE=60
+WAIT_TIME_TO_STABILIZE=40
 #TODO In production, specify p6e-gb200, only. We added g4dn only for testing purposes.
 ALLOWED_INSTANCE_TYPES="^(p6e-gb200|g4dn)"
 IMEX_SERVICE="nvidia-imex"
