@@ -37,9 +37,9 @@ Scheduling:
           Enabled: true
           GdrSupport: true
         {% endif %}
-#        HealthChecks:
-#          Gpu:
-#            Enabled: True
+        HealthChecks:
+          Gpu:
+            Enabled: True
     Networking:
       SubnetIds:
         - {{ private_subnet_id }}
