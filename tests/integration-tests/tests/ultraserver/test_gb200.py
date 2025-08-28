@@ -28,7 +28,8 @@ from tests.efa.test_efa import FABTESTS_BASIC_TESTS, FABTESTS_GDRCOPY_TESTS
 from utils import wait_for_computefleet_changed, get_compute_nodes_instance_ids
 from retrying import retry
 
-from tests.common.assertions import assert_regex_in_file, wait_for_instances_in_compute_resource
+from tests.common.assertions import assert_regex_in_file, wait_for_instances_in_compute_resource, \
+    assert_no_errors_in_logs
 from tests.common.schedulers_common import SlurmCommands
 from tests.common.utils import is_existing_remote_file, read_remote_file, terminate_nodes_manually, \
     wait_process_completion, fetch_instance_slots
@@ -68,7 +69,7 @@ def assert_imex_nodes_config_is_correct(rce: RemoteCommandExecutor, launch_templ
     logging.info(f"IMEX nodes config {imex_nodes_config_file} contains the expected nodes: {expected_ips}")
 
 
-def assert_no_errors_in_logs(cluster: Cluster, queue: str, compute_resource: str):
+def assert_no_imex_errors_in_logs(cluster: Cluster, queue: str, compute_resource: str):
     rce = RemoteCommandExecutor(cluster)
     logs = ["/var/log/nvidia-imex-verbose.log", "/var/log/parallelcluster/nvidia-imex-prolog.log"]
     for compute_node_ip in cluster.get_compute_nodes_private_ip(queue, compute_resource):
@@ -214,7 +215,7 @@ def assert_imex_healthy(cluster: Cluster, queue: str, compute_resource: str, max
 
     assert_imex_nodes_config_is_correct(rce, launch_template_id, ips)
     assert_imex_status(rce, job_id, ips, service_status="UP", node_status="READY", connection_status="CONNECTED")
-    assert_no_errors_in_logs(cluster, queue, compute_resource)
+    assert_no_imex_errors_in_logs(cluster, queue, compute_resource)
 
 
 def assert_imex_not_configured(cluster: Cluster, queue: str, compute_resource: str, max_nodes: int = 1):
