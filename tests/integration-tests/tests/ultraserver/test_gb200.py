@@ -360,7 +360,6 @@ def test_gb200(
     This is a reasonable approximation for the test because the focus of the test is on IMEX and topology configuration,
     which can be executed on g4dn as well.
     """
-    time.sleep(10*60)
     max_queue_size = 2
     max_queue_size_without_imex = 1 if instance != "p6e-gb200.36xlarge" else 0
     capacity_block_reservation_id = CAPACITY_BLOCK_RESERVATION_ID if instance == "p6e-gb200.36xlarge" else None
