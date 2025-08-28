@@ -417,77 +417,77 @@ def test_gb200(
         assert_topology_plugin_not_configured_for_queue(cluster, queue_without_imex, compute_resource_without_imex)
 
     # Test cluster update with changed topology configuration
-    # max_queue_size_updated = 3
-    # updated_cluster_config = pcluster_config_reader(
-    #     config_file="pcluster.config.update.yaml",
-    #     bucket_name=bucket_name,
-    #     head_node_start_script=headnode_start_filename,
-    #     max_queue_size_without_imex=max_queue_size_without_imex,
-    #     max_queue_size=max_queue_size_updated,
-    #     queue_with_imex=queue_with_imex,
-    #     compute_resource_with_imex=compute_resource_with_imex,
-    #     queue_without_imex=queue_without_imex,
-    #     compute_resource_without_imex=compute_resource_without_imex,
-    # )
-    #
-    # cluster.stop()
-    # wait_for_computefleet_changed(cluster, "STOPPED")
-    # cluster.update(str(updated_cluster_config), force_update=True)
-    # cluster.start()
-    # wait_for_computefleet_changed(cluster, "RUNNING")
-    # # Wait for compute nodes to be fully running
-    # wait_for_instances_in_compute_resource(
-    #     cluster, queue_with_imex, compute_resource_with_imex, ["running"], max_queue_size_updated
-    # )
-    #
-    # # Verify imex and topology plugin configuration after update
-    # assert_imex_healthy(cluster, queue_with_imex, compute_resource_with_imex, max_queue_size_updated)
-    # assert_topology_plugin_configured(
-    #     cluster, queue_with_imex, compute_resource_with_imex, f"{max_queue_size_updated}", max_queue_size_updated
-    # )
-    # with soft_assertions():
-    #     if instance != "p6e-gb200.36xlarge":
-    #         assert_imex_not_configured(cluster, queue_without_imex, compute_resource_without_imex)
-    #     assert_topology_plugin_not_configured_for_queue(cluster, queue_without_imex, compute_resource_without_imex)
-    #
-    # # Forcefully terminate a compute node in the compute resource supporting IMEX
-    # # to simulate an outage that forces the replacement of the node and consequently the IMEX reconfiguration.
-    # logging.info(f"Terminating a node in queue {queue_with_imex} and compute resource {compute_resource_with_imex}")
-    # terminate_nodes_manually(
-    #     [cluster.get_compute_nodes(queue_with_imex, compute_resource_with_imex)[0].get("InstanceId")], region
-    # )
-    # wait_for_instances_in_compute_resource(
-    #     cluster, queue_with_imex, compute_resource_with_imex, ["running"], max_queue_size_updated
-    # )
-    #
-    # # Verify IMEX is still healthy after node replacement
-    # assert_imex_healthy(cluster, queue_with_imex, compute_resource_with_imex, max_queue_size_updated)
-    #
-    # # Test final cluster update to remove topology plugin configuration completely
-    # final_cluster_config = pcluster_config_reader(
-    #     config_file="pcluster.config.final.yaml",
-    #     bucket_name=bucket_name,
-    #     head_node_start_script=headnode_start_filename,
-    #     max_queue_size=max_queue_size_updated,
-    #     max_queue_size_without_imex=max_queue_size_without_imex,
-    #     queue_with_imex=queue_with_imex,
-    #     compute_resource_with_imex=compute_resource_with_imex,
-    #     queue_without_imex=queue_without_imex,
-    #     compute_resource_without_imex=compute_resource_without_imex,
-    # )
-    #
-    # cluster.stop()
-    # wait_for_computefleet_changed(cluster, "STOPPED")
-    # cluster.update(str(final_cluster_config), force_update=True)
-    # cluster.start()
-    # wait_for_computefleet_changed(cluster, "RUNNING")
-    #
-    # # Verify topology plugin is completely disabled after removing force_configuration
-    # if instance != "p6e-gb200.36xlarge":
-    #     assert_topology_plugin_completely_disabled(cluster)
-    #
-    # # Verify IMEX still works but topology is completely removed
-    # assert_imex_healthy(cluster, queue_with_imex, compute_resource_with_imex, max_queue_size_updated)
-    # with soft_assertions():
-    #     if instance != "p6e-gb200.36xlarge":
-    #         assert_imex_not_configured(cluster, queue_without_imex, compute_resource_without_imex)
+    max_queue_size_updated = 3
+    updated_cluster_config = pcluster_config_reader(
+        config_file="pcluster.config.update.yaml",
+        bucket_name=bucket_name,
+        head_node_start_script=headnode_start_filename,
+        max_queue_size_without_imex=max_queue_size_without_imex,
+        max_queue_size=max_queue_size_updated,
+        queue_with_imex=queue_with_imex,
+        compute_resource_with_imex=compute_resource_with_imex,
+        queue_without_imex=queue_without_imex,
+        compute_resource_without_imex=compute_resource_without_imex,
+    )
+
+    cluster.stop()
+    wait_for_computefleet_changed(cluster, "STOPPED")
+    cluster.update(str(updated_cluster_config), force_update=True)
+    cluster.start()
+    wait_for_computefleet_changed(cluster, "RUNNING")
+    # Wait for compute nodes to be fully running
+    wait_for_instances_in_compute_resource(
+        cluster, queue_with_imex, compute_resource_with_imex, ["running"], max_queue_size_updated
+    )
+
+    # Verify imex and topology plugin configuration after update
+    assert_imex_healthy(cluster, queue_with_imex, compute_resource_with_imex, max_queue_size_updated)
+    assert_topology_plugin_configured(
+        cluster, queue_with_imex, compute_resource_with_imex, f"{max_queue_size_updated}", max_queue_size_updated
+    )
+    with soft_assertions():
+        if instance != "p6e-gb200.36xlarge":
+            assert_imex_not_configured(cluster, queue_without_imex, compute_resource_without_imex)
+        assert_topology_plugin_not_configured_for_queue(cluster, queue_without_imex, compute_resource_without_imex)
+
+    # Forcefully terminate a compute node in the compute resource supporting IMEX
+    # to simulate an outage that forces the replacement of the node and consequently the IMEX reconfiguration.
+    logging.info(f"Terminating a node in queue {queue_with_imex} and compute resource {compute_resource_with_imex}")
+    terminate_nodes_manually(
+        [cluster.get_compute_nodes(queue_with_imex, compute_resource_with_imex)[0].get("InstanceId")], region
+    )
+    wait_for_instances_in_compute_resource(
+        cluster, queue_with_imex, compute_resource_with_imex, ["running"], max_queue_size_updated
+    )
+
+    # Verify IMEX is still healthy after node replacement
+    assert_imex_healthy(cluster, queue_with_imex, compute_resource_with_imex, max_queue_size_updated)
+
+    # Test final cluster update to remove topology plugin configuration completely
+    final_cluster_config = pcluster_config_reader(
+        config_file="pcluster.config.final.yaml",
+        bucket_name=bucket_name,
+        head_node_start_script=headnode_start_filename,
+        max_queue_size=max_queue_size_updated,
+        max_queue_size_without_imex=max_queue_size_without_imex,
+        queue_with_imex=queue_with_imex,
+        compute_resource_with_imex=compute_resource_with_imex,
+        queue_without_imex=queue_without_imex,
+        compute_resource_without_imex=compute_resource_without_imex,
+    )
+
+    cluster.stop()
+    wait_for_computefleet_changed(cluster, "STOPPED")
+    cluster.update(str(final_cluster_config), force_update=True)
+    cluster.start()
+    wait_for_computefleet_changed(cluster, "RUNNING")
+
+    # Verify topology plugin is completely disabled after removing force_configuration
+    if instance != "p6e-gb200.36xlarge":
+        assert_topology_plugin_completely_disabled(cluster)
+
+    # Verify IMEX still works but topology is completely removed
+    assert_imex_healthy(cluster, queue_with_imex, compute_resource_with_imex, max_queue_size_updated)
+    with soft_assertions():
+        if instance != "p6e-gb200.36xlarge":
+            assert_imex_not_configured(cluster, queue_without_imex, compute_resource_without_imex)
