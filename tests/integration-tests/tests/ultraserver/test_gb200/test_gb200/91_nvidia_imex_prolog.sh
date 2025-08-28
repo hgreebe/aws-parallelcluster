@@ -120,6 +120,10 @@ function reload_imex() {
 
   return_unless_gb200_with_imex
 
+  channel_major_number=$(cat /proc/devices | grep nvidia-caps-imex-channels | awk '{ print $1 }')
+  sudo mkdir /dev/nvidia-caps-imex-channels/
+  sudo mknod /dev/nvidia-caps-imex-channels/channel0 c $channel_major_number 0
+
   QUEUE_NAME=$(get_dna_parameter "scheduler_queue_name")
   COMPUTE_RESOURCE_NAME=$(get_dna_parameter "scheduler_compute_resource_name")
   LAUNCH_TEMPLATE_ID=$(get_dna_parameter "launch_template_id")
