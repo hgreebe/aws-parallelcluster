@@ -15,6 +15,8 @@ import time
 from datetime import datetime
 
 import boto3
+
+from tests.multiple_nics.test_multiple_nics import _test_compute_node_nics, _test_head_node_nics
 from time_utils import seconds
 import pytest
 import xmltodict
@@ -407,6 +409,9 @@ def test_gb200(
     cluster = clusters_factory(cluster_config)
     remote_command_executor = RemoteCommandExecutor(cluster)
     scheduler_commands = scheduler_commands_factory(remote_command_executor)
+
+    _test_head_node_nics(remote_command_executor, region)
+    _test_compute_node_nics(cluster, region, remote_command_executor, scheduler_commands)
 
     _test_efa_installation(scheduler_commands, remote_command_executor, efa_installed=True, partition="q1")
     # _test_mpi(remote_command_executor, slots_per_instance, scheduler, scheduler_commands, partition="q1")
