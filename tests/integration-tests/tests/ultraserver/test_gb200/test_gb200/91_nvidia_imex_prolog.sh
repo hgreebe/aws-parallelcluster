@@ -146,6 +146,16 @@ function reload_imex() {
 
   return_unless_gb200_with_imex
 
+  MAJOR_NUMBER=$(cat /proc/devices | grep nvidia-caps-imex-channels | cut -d' ' -f1)
+  if [ ! -d "/dev/nvidia-caps-imex-channels" ]; then
+      sudo mkdir /dev/nvidia-caps-imex-channels
+  fi
+
+  # Then check and create device node
+  if [ ! -e "/dev/nvidia-caps-imex-channels/channel0" ]; then
+      sudo mknod /dev/nvidia-caps-imex-channels/channel0 c $MAJOR_NUMBER 0
+  fi
+
   QUEUE_NAME=$(get_dna_parameter "scheduler_queue_name")
   COMPUTE_RESOURCE_NAME=$(get_dna_parameter "scheduler_compute_resource_name")
   LAUNCH_TEMPLATE_ID=$(get_dna_parameter "launch_template_id")
