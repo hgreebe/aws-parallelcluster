@@ -141,20 +141,26 @@ function reload_imex() {
   timeout ${IMEX_START_TIMEOUT} systemctl start ${IMEX_SERVICE}
 }
 
+function create_default_imex_channel() {
+  channel_major_number=$(cat /proc/devices | grep nvidia-caps-imex-channels | awk '{ print $1 }')
+  if [ ! -d "/dev/nvidia-caps-imex-channels" ]; then
+    sudo mkdir /dev/nvidia-caps-imex-channels
+  fi
+
+  if [ ! -e "/dev/nvidia-caps-imex-channels/channel0" ]; then
+    info "Creating IMEX default Channel"
+    sudo mknod /dev/nvidia-caps-imex-channels/channel0 c $channel_major_number 0
+  else
+    info "IMEX default Channel already exists"
+  fi
+}
+
 {
   info "PROLOG Start JobId=${SLURM_JOB_ID}: $0"
 
   return_unless_gb200_with_imex
 
-  MAJOR_NUMBER=$(cat /proc/devices | grep nvidia-caps-imex-channels | cut -d' ' -f1)
-  if [ ! -d "/dev/nvidia-caps-imex-channels" ]; then
-      sudo mkdir /dev/nvidia-caps-imex-channels
-  fi
-
-  # Then check and create device node
-  if [ ! -e "/dev/nvidia-caps-imex-channels/channel0" ]; then
-      sudo mknod /dev/nvidia-caps-imex-channels/channel0 c $MAJOR_NUMBER 0
-  fi
+  create_default_imex_channel
 
   QUEUE_NAME=$(get_dna_parameter "scheduler_queue_name")
   COMPUTE_RESOURCE_NAME=$(get_dna_parameter "scheduler_compute_resource_name")

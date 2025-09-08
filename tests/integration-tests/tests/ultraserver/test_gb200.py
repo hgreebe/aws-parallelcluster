@@ -24,11 +24,13 @@ from assertpy import assert_that, soft_assertions
 from clusters_factory import Cluster
 from remote_command_executor import RemoteCommandExecutor
 from tests.common.mpi_common import _test_mpi
-from tests.efa.test_efa import FABTESTS_BASIC_TESTS, FABTESTS_GDRCOPY_TESTS, _test_efa_installation, _test_shm_transfer_is_enabled
+from tests.efa.test_efa import FABTESTS_BASIC_TESTS, FABTESTS_GDRCOPY_TESTS, _test_efa_installation, \
+    _test_shm_transfer_is_enabled, _execute_fabtests
 from utils import wait_for_computefleet_changed, get_compute_nodes_instance_ids
 from retrying import retry
 
-from tests.common.assertions import assert_regex_in_file, wait_for_instances_in_compute_resource
+from tests.common.assertions import assert_regex_in_file, wait_for_instances_in_compute_resource, \
+    assert_no_errors_in_logs
 from tests.common.nccl_common import install_and_run_nccl_benchmarks
 from tests.common.schedulers_common import SlurmCommands
 from tests.common.utils import is_existing_remote_file, read_remote_file, terminate_nodes_manually, \
@@ -64,7 +66,7 @@ def assert_imex_nodes_config_is_correct(rce: RemoteCommandExecutor, launch_templ
     logging.info(f"IMEX nodes config {imex_nodes_config_file} contains the expected nodes: {expected_ips}")
 
 
-def assert_no_errors_in_logs(cluster: Cluster, queue: str, compute_resource: str):
+def assert_no_errors_in_logs_gb200(cluster: Cluster, queue: str, compute_resource: str):
     rce = RemoteCommandExecutor(cluster)
     logs = ["/var/log/nvidia-imex-verbose.log", "/var/log/parallelcluster/nvidia-imex-prolog.log"]
     for compute_node_ip in cluster.get_compute_nodes_private_ip(queue, compute_resource):
@@ -215,7 +217,7 @@ def assert_imex_healthy(cluster: Cluster, queue: str, compute_resource: str, max
 
         assert_imex_nodes_config_is_correct(rce, launch_template_id, ips)
         assert_imex_status(rce, job_id, ips, service_status="UP", node_status="READY", connection_status="CONNECTED")
-        assert_no_errors_in_logs(cluster, queue, compute_resource)
+        assert_no_errors_in_logs_gb200(cluster, queue, compute_resource)
 
     # Retry mechanism: retry every 5 minutes, maximum 2 retries (3 total attempts)
     max_retries = 2
@@ -389,6 +391,7 @@ def test_gb200(
     s3_bucket_factory,
     region,
     instance,
+    scheduler,
     scheduler_commands_factory,
 ):
     """
@@ -425,7 +428,7 @@ def test_gb200(
     if instance == "p6e-gb200.36xlarge":
         ultraserver_reservations_ids = get_ultraserver_capacity_reservation_id(instance, region)
         if ultraserver_reservations_ids:
-            capacity_reservation_id = "cr-0f5aadeeafcd668bf"
+            capacity_reservation_id = "cr-08be2f796cdaf5015"
             capacity_max_queue_size = 2
         else:
             pytest.skip(f"Skipping the test No Capacity Block for {instance} was found in {region}")
@@ -479,6 +482,27 @@ def test_gb200(
     assert_topology_plugin_configured(
         cluster, queue_with_imex, compute_resource_with_imex, f"{max_queue_size}", max_queue_size
     )
+
+    fabtests_report = _execute_fabtests(remote_command_executor, test_datadir, instance)
+
+    num_tests = int(fabtests_report.get("testsuites", {}).get("testsuite", {})[0].get("@tests", None))
+    num_failures = int(fabtests_report.get("testsuites", {}).get("testsuite", {})[0].get("@failures", None))
+    num_errors = int(fabtests_report.get("testsuites", {}).get("testsuite", {})[0].get("@errors", None))
+
+    with soft_assertions():
+        assert_that(num_tests, description="Cannot read number of tests from Fabtests report").is_not_none()
+        assert_that(num_failures, description="Cannot read number of failures from Fabtests report").is_not_none()
+        assert_that(num_errors, description="Cannot read number of errors from Fabtests report").is_not_none()
+
+    if num_failures + num_errors > 0:
+        logging.info(f"Fabtests report:\n{fabtests_report}")
+
+    with soft_assertions():
+        assert_that(
+            num_failures, description=f"{num_failures}/{num_tests} libfabric tests are failing"
+        ).is_equal_to(0)
+        assert_that(num_errors, description=f"{num_errors}/{num_tests} libfabric tests got errors").is_equal_to(0)
+        assert_no_errors_in_logs(remote_command_executor, scheduler, skip_ice=True)
 
     # Test that IMEX and topology are not configured for queue without IMEX support
     with soft_assertions():
