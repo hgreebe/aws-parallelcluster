@@ -67,7 +67,7 @@ def test_slurm_cli_commands(
     else:
         logging.info("Using pcluster python package: %s", run_command("which pcluster"))
         logging.info("Using node: %s", run_command("which node"))
-        logging.info("Using path: %s", run_command("echo $PATH"))
+        logging.info("Using path: %s", os_lib.environ.get("PATH", ""))
 
     # Use long scale down idle time so we know nodes are terminated by pcluster stop
     cluster_config = pcluster_config_reader(scaledown_idletime=60)
