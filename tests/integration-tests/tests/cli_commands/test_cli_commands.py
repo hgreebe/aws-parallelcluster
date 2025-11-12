@@ -60,10 +60,14 @@ def test_slurm_cli_commands(
                 pytest.fail(f"Installer path is not valid: {installer_path}")
             monkeypatch.setenv("PATH", installer_path + ":" + os_lib.environ["PATH"])
             logging.info("Using installer: %s", run_command("which pcluster"))
+            logging.info("Using node: %s", run_command("which node"))
+            logging.info("Using path: %s", run_command("echo $PATH"))
         else:
             pytest.skip("Skipping test with installer because installer_path is not provided.")
     else:
         logging.info("Using pcluster python package: %s", run_command("which pcluster"))
+        logging.info("Using node: %s", run_command("which node"))
+        logging.info("Using path: %s", run_command("echo $PATH"))
 
     # Use long scale down idle time so we know nodes are terminated by pcluster stop
     cluster_config = pcluster_config_reader(scaledown_idletime=60)
