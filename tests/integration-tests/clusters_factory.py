@@ -558,12 +558,12 @@ class ClustersFactory:
                 log_error=log_error,
                 custom_cli_credentials=cluster.custom_cli_credentials,
             )
+            logging.info("create-cluster response: %s", result.stdout)
             response = json.loads(result.stdout)
 
             logging.info("test create cluster: Using node: %s", run_command("which node"))
             logging.info("test create cluster: Using node version: %s", run_command("node --version"))
             logging.info("test create cluster: Using path: %s", os_lib.environ.get("PATH", ""))
-            logging.info("create-cluster response: %s", result.stdout)
             if wait:
                 if response.get("cloudFormationStackStatus") != "CREATE_COMPLETE":
                     error = f"Cluster creation failed for {name}"
