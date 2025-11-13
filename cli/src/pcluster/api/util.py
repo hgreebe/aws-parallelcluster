@@ -197,37 +197,44 @@ def _assert_node_version():
             ["node", "--version"], stderr=subprocess.STDOUT, shell=False, encoding="utf-8"
         )
         LOGGER.debug("Found Node.js version (%s)", node_version_string)
-    except Exception:
-        LOGGER.debug("Unable to determine current Node.js version from node")
-        try:
-            # A nosec comment is appended to the following line in order to disable the B607 and B603 checks.
-            # It is a false positive since the PATH search is wanted and the input of the check_output is static.
-            # [B607:start_process_with_partial_path] Is suppressed because location of executable is retrieved from env
-            #   PATH
-            # [B603:subprocess_without_shell_equals_true] Is suppressed because input of check_output is not coming from
-            #   untrusted source
-            node_version_string = subprocess.check_output(  # nosec B607 B603
-                ["nvm", "current"], stderr=subprocess.STDOUT, shell=False, encoding="utf-8"
-            )
-            LOGGER.debug("Found Node.js version '%s' in use", node_version_string)
-        except Exception:
-            message = "Unable to check Node.js version"
-            LOGGER.critical(message)
-            raise Exception(message)
-        # `nvm current` will return `none` if no versions of Node.js are currently installed.
-        if node_version_string == "none":
-            message = (
-                "Node.js does not appear to be installed. Please use the Node Version Manager (nvm) to install a"
-                " version of Node.js compatible with this platform."
-            )
-        else:
-            message = (
-                f"Unable to invoke Node.js for the installed version {node_version_string}. This version may not be"
-                " compatible with this platform. Please use the Node Version Manager (nvm) to install and use a"
-                " compatible version of Node.js compatible with this platform."
-            )
-        LOGGER.critical(message)
-        raise Exception(message)
+    except subprocess.CalledProcessError as e:
+        LOGGER.critical("Node execution failed with return code %d: %s", e.returncode, e.output)
+        raise
+    except Exception as e:
+        LOGGER.critical("Unexpected error running node: %s", str(e))
+        LOGGER.debug("Current ENV: %s", dict(os_lib.environ))
+        raise
+    # except Exception:
+    #     LOGGER.debug("Unable to determine current Node.js version from node")
+    #     try:
+    #         # A nosec comment is appended to the following line in order to disable the B607 and B603 checks.
+    #         # It is a false positive since the PATH search is wanted and the input of the check_output is static.
+    #         # [B607:start_process_with_partial_path] Is suppressed because location of executable is retrieved from env
+    #         #   PATH
+    #         # [B603:subprocess_without_shell_equals_true] Is suppressed because input of check_output is not coming from
+    #         #   untrusted source
+    #         node_version_string = subprocess.check_output(  # nosec B607 B603
+    #             ["nvm", "current"], stderr=subprocess.STDOUT, shell=False, encoding="utf-8"
+    #         )
+    #         LOGGER.debug("Found Node.js version '%s' in use", node_version_string)
+    #     except Exception:
+    #         message = "Unable to check Node.js version"
+    #         LOGGER.critical(message)
+    #         raise Exception(message)
+    #     # `nvm current` will return `none` if no versions of Node.js are currently installed.
+    #     if node_version_string == "none":
+    #         message = (
+    #             "Node.js does not appear to be installed. Please use the Node Version Manager (nvm) to install a"
+    #             " version of Node.js compatible with this platform."
+    #         )
+    #     else:
+    #         message = (
+    #             f"Unable to invoke Node.js for the installed version {node_version_string}. This version may not be"
+    #             " compatible with this platform. Please use the Node Version Manager (nvm) to install and use a"
+    #             " compatible version of Node.js compatible with this platform."
+    #         )
+    #     LOGGER.critical(message)
+    #     raise Exception(message)
 
     node_version = packaging_version.parse(node_version_string)
 
