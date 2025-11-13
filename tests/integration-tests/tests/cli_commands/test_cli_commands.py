@@ -210,6 +210,10 @@ def _test_create_or_update_with_warnings(run_fn):
     Accepts a run_fn function that will accept arguments for create / update
     """
     for expected_response, validation_key, args in _validation_test_cases():
+        logging.info("test create: Using pcluster python package: %s", run_command("which pcluster"))
+        logging.info("test create: Using node: %s", run_command("which node"))
+        logging.info("test create: Using node version: %s", run_command("node --version"))
+        logging.info("test create: Using path: %s", os_lib.environ.get("PATH", ""))
         actual_response = run_fn({"raise_on_error": False, "log_error": False, **args})
         _check_response(actual_response, expected_response, validation_key)
 
