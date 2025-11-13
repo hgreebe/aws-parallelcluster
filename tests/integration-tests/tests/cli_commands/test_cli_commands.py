@@ -61,7 +61,7 @@ def test_slurm_cli_commands(
             monkeypatch.setenv("PATH", installer_path + ":" + os_lib.environ["PATH"])
             logging.info("Using installer: %s", run_command("which pcluster"))
             logging.info("Using node: %s", run_command("which node"))
-            logging.info("Using path: %s", run_command("echo $PATH"))
+            logging.info("Using path: %s", os_lib.environ.get("PATH", ""))
         else:
             pytest.skip("Skipping test with installer because installer_path is not provided.")
     else:
