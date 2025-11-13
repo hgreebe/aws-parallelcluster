@@ -188,9 +188,9 @@ def _assert_node_version():
         #   PATH
         # [B603:subprocess_without_shell_equals_true] Is suppressed because input of check_output is not coming from
         #   untrusted source
-        logging.info("test create: Using node: %s", run_command("which node"))
-        logging.info("test create: Using node version: %s", run_command("node --version"))
-        logging.info("test create: Using path: %s", os_lib.environ.get("PATH", ""))
+        logging.info("test assert: Using node: %s", run_command("which node"))
+        logging.info("test assert: Using node version: %s", run_command("node --version"))
+        logging.info("test assert: Using path: %s", os_lib.environ.get("PATH", ""))
         logging.info(f"Current working directory: {os_lib.getcwd()}")
 
         node_version_string = subprocess.check_output(  # nosec B607 B603
