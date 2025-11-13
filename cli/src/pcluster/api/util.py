@@ -11,6 +11,8 @@
 import datetime
 import logging
 import shutil
+import os as os_lib
+
 
 # A nosec comment is appended to the following line in order to disable the B404 check.
 # In this file the input of the module subprocess is trusted.
@@ -21,6 +23,7 @@ from packaging import version as packaging_version
 
 from pcluster.api import typing_utils
 from pcluster.constants import NODEJS_INCOMPATIBLE_VERSION_RANGE, NODEJS_MIN_VERSION
+from utils import run_command
 
 LOGGER = logging.getLogger(__name__)
 
@@ -188,6 +191,9 @@ def _assert_node_version():
         node_version_string = subprocess.check_output(  # nosec B607 B603
             ["node", "--version"], stderr=subprocess.STDOUT, shell=False, encoding="utf-8"
         )
+        logging.info("test create: Using node: %s", run_command("which node"))
+        logging.info("test create: Using node version: %s", run_command("node --version"))
+        logging.info("test create: Using path: %s", os_lib.environ.get("PATH", ""))
         LOGGER.debug("Found Node.js version (%s)", node_version_string)
     except Exception:
         LOGGER.debug("Unable to determine current Node.js version from node")
