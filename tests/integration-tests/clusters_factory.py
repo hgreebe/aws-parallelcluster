@@ -549,6 +549,11 @@ class ClustersFactory:
         # create the cluster
         logging.info("Creating cluster {0} with config {1}".format(name, cluster.config_file))
         command, wait = self._build_command(cluster, kwargs)
+        logging.info("Pre-check: Node location: %s", run_command("which node"))
+        logging.info("Pre-check: Node version: %s", run_command("node --version"))
+        logging.info("Pre-check: PATH: %s", os_lib.environ.get("PATH", ""))
+
+
         try:
             start_time = time.time()
             result = run_pcluster_command(
