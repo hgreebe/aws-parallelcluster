@@ -11,6 +11,8 @@
 # See the License for the specific language governing permissions and limitations under the License.
 import functools
 import json
+import os as os_lib
+
 import logging
 import re
 import subprocess
@@ -33,7 +35,7 @@ from utils import (
     retrieve_cfn_outputs,
     retrieve_cfn_parameters,
     retrieve_cfn_resources,
-    retry_if_subprocess_error,
+    retry_if_subprocess_error, run_command,
 )
 
 from tests.common.utils import read_remote_file
@@ -556,6 +558,9 @@ class ClustersFactory:
                 log_error=log_error,
                 custom_cli_credentials=cluster.custom_cli_credentials,
             )
+            logging.info("test create cluster: Using node: %s", run_command("which node"))
+            logging.info("test create cluster: Using node version: %s", run_command("node --version"))
+            logging.info("test create cluster: Using path: %s", os_lib.environ.get("PATH", ""))
             logging.info("create-cluster response: %s", result.stdout)
             response = json.loads(result.stdout)
             if wait:
