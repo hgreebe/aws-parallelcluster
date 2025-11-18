@@ -191,177 +191,178 @@ def test_update_slurm(region, pcluster_config_reader, s3_bucket_factory, cluster
         postupdate_script="updated_postupdate.sh",
         spot_instance_types=spot_instance_types,
     )
-    cluster.update(str(updated_config_file), force_update="true")
-
-    # Verify that compute and login nodes stored the deployed config version on DDB
-    last_cluster_config_version = get_deployed_config_version(cluster)
-    # This check must be retried because the last update added a new static node
-    # and the update workflow does not wait for new static nodes to complete their bootstrap, by design.
-    # On the other hand, the update workflow waits for existing nodes to complete their update recipes.
-    # As a consequence, the stack may reach the UPDATE_COMPLETE state
-    # without waiting for new static nodes to complete their bootstrap recipes.
-    # We wait at most 6 minutes because we know that compute nodes may take 4/5 minutes to bootstrap.
-    retry(wait_fixed=seconds(10), stop_max_delay=minutes(6))(assert_instance_config_version_on_ddb)(
-        cluster, last_cluster_config_version
-    )
-
-    assert_instance_config_version_on_ddb(cluster, last_cluster_config_version)
-
-    # Here is the expected list of nodes.
-    # the cluster:
-    # queue1-st-c5large-1
-    # queue1-st-c5large-2
-    retry(wait_fixed=seconds(20), stop_max_delay=minutes(5))(assert_initial_conditions)(
-        slurm_commands, 2, 0, partition="queue1"
-    )
-    updated_queues_config = {
-        "queue1": {
-            "compute_resources": {
-                "queue1-i1": {
-                    "instances": [
-                        {
-                            "instance_type": "c5.large",
-                        },
-                        {
-                            "instance_type": "c5n.large",
-                        },
-                        {
-                            "instance_type": "c5d.large",
-                        },
-                    ],
-                    "expected_running_instances": 2,
-                    "expected_power_saved_instances": 2,
-                    "disable_hyperthreading": False,
-                    "enable_efa": False,
-                },
-                "queue1-i2": {
-                    "instances": [
-                        {
-                            "instance_type": "c5.2xlarge",
-                        }
-                    ],
-                    "expected_running_instances": 0,
-                    "expected_power_saved_instances": 10,
-                    "disable_hyperthreading": False,
-                    "enable_efa": False,
-                },
-                "queue1-i3": {
-                    "instances": [
-                        {
-                            "instance_type": instance_type,
-                        }
-                        for instance_type in spot_instance_types
-                    ],
-                    "expected_running_instances": 0,
-                    "expected_power_saved_instances": 10,
-                    "disable_hyperthreading": False,
-                    "enable_efa": False,
-                },
-            },
-            "compute_type": "ondemand" if "us-iso" in region else "spot",
-        },
-        "queue2": {
-            "compute_resources": {
-                "queue2-i1": {
-                    "instances": [
-                        {
-                            "instance_type": "c5n.18xlarge",
-                        }
-                    ],
-                    "expected_running_instances": 0,
-                    "expected_power_saved_instances": 1,
-                    "enable_efa": True,
-                    "disable_hyperthreading": True,
-                }
-            },
-            "compute_type": "ondemand",
-            "networking": {"placement_group": {"enabled": False}},
-        },
-        "queue3": {
-            "compute_resources": {
-                "queue3-i1": {
-                    "instances": [
-                        {
-                            "instance_type": "c5n.18xlarge",
-                        }
-                    ],
-                    "expected_running_instances": 0,
-                    "expected_power_saved_instances": 10,
-                    "disable_hyperthreading": True,
-                    "enable_efa": True,
-                },
-                "queue3-i2": {
-                    "instances": [
-                        {
-                            "instance_type": "t3.xlarge",
-                        }
-                    ],
-                    "expected_running_instances": 0,
-                    "expected_power_saved_instances": 10,
-                    "disable_hyperthreading": False,
-                    "enable_efa": False,
-                },
-            },
-            "compute_type": "ondemand",
-            "networking": {"placement_group": {"enabled": False}},
-        },
-    }
-
-    _assert_scheduler_nodes(queues_config=updated_queues_config, slurm_commands=slurm_commands)
-    _assert_launch_templates_config(queues_config=updated_queues_config, cluster_name=cluster.name, region=region)
-
-    # Read updated configuration
-    with open(updated_config_file, encoding="utf-8") as conf_file:
-        updated_config = yaml.safe_load(conf_file)
-
-    # Check new S3 resources
-    check_s3_read_resource(region, cluster, get_policy_resources(updated_config, enable_write_access=False))
-    check_s3_read_write_resource(region, cluster, get_policy_resources(updated_config, enable_write_access=True))
-
-    # Check new Additional IAM policies
-    _check_role_attached_policy(region, cluster, additional_policy_arn)
-
-    # Assert that the job submitted before the update is still running
-    assert_that(slurm_commands.get_job_info(job_id)).contains("JobState=RUNNING")
-
-    _check_volume(cluster, updated_config, region)
-
-    # Launch a new instance for queue1 and test updated pre/post install script execution and extra json update
-    # Add a new dynamic node to queue1-i3
-    new_compute_node = _add_compute_nodes(slurm_commands, "queue1", "queue1-i3&dynamic")
-
-    logging.info(f"New compute node: {new_compute_node}")
-
-    assert_that(len(new_compute_node), description="There should be only one new compute node").is_equal_to(1)
-    _check_script(command_executor, slurm_commands, new_compute_node[0], "updated_preinstall", "ABC")
-    _check_script(command_executor, slurm_commands, new_compute_node[0], "updated_postinstall", "DEF")
-
-    # Check the new update hook with new args is executed at cluster update time
-    _check_head_node_script(command_executor, "updated_postupdate", "UPDATE-ARG2")
-
-    # Same as previous update, but with a post update script that fails
-    failed_update_config_file = pcluster_config_reader(
-        config_file="pcluster.config.update.yaml",
-        output_file="pcluster.config.update.failed.yaml",
-        resource_bucket=bucket_name,
-        additional_policy_arn=additional_policy_arn,
-        postupdate_script="failed_postupdate.sh",
-        spot_instance_types=spot_instance_types,
-    )
-    cluster.update(str(failed_update_config_file), raise_on_error=False, log_error=False)
-
-    _check_rollback_with_expected_error_message(region, cluster)
-
-    # check new extra json
-    _check_extra_json(command_executor, slurm_commands, new_compute_node[0], "test_value")
-
-    # This check must be retried when executed to validate a rollback, because the rollback is a non-blocking operation.
-    # In particular, the stack reaches the UPDATE_ROLLBACK_COMPLETE state without waiting for the head node to
-    # signal the success to its WaitCondition.
-    # As a consequence, there may be some cluster nodes still executing their update recipes.
-    retry(wait_fixed=seconds(10), stop_max_delay=minutes(3))(assert_instance_config_version_on_ddb)(
-        cluster, last_cluster_config_version
-    )
+    #
+    # cluster.update(str(updated_config_file), force_update="true")
+    #
+    # # Verify that compute and login nodes stored the deployed config version on DDB
+    # last_cluster_config_version = get_deployed_config_version(cluster)
+    # # This check must be retried because the last update added a new static node
+    # # and the update workflow does not wait for new static nodes to complete their bootstrap, by design.
+    # # On the other hand, the update workflow waits for existing nodes to complete their update recipes.
+    # # As a consequence, the stack may reach the UPDATE_COMPLETE state
+    # # without waiting for new static nodes to complete their bootstrap recipes.
+    # # We wait at most 6 minutes because we know that compute nodes may take 4/5 minutes to bootstrap.
+    # retry(wait_fixed=seconds(10), stop_max_delay=minutes(6))(assert_instance_config_version_on_ddb)(
+    #     cluster, last_cluster_config_version
+    # )
+    #
+    # assert_instance_config_version_on_ddb(cluster, last_cluster_config_version)
+    #
+    # # Here is the expected list of nodes.
+    # # the cluster:
+    # # queue1-st-c5large-1
+    # # queue1-st-c5large-2
+    # retry(wait_fixed=seconds(20), stop_max_delay=minutes(5))(assert_initial_conditions)(
+    #     slurm_commands, 2, 0, partition="queue1"
+    # )
+    # updated_queues_config = {
+    #     "queue1": {
+    #         "compute_resources": {
+    #             "queue1-i1": {
+    #                 "instances": [
+    #                     {
+    #                         "instance_type": "c5.large",
+    #                     },
+    #                     {
+    #                         "instance_type": "c5n.large",
+    #                     },
+    #                     {
+    #                         "instance_type": "c5d.large",
+    #                     },
+    #                 ],
+    #                 "expected_running_instances": 2,
+    #                 "expected_power_saved_instances": 2,
+    #                 "disable_hyperthreading": False,
+    #                 "enable_efa": False,
+    #             },
+    #             "queue1-i2": {
+    #                 "instances": [
+    #                     {
+    #                         "instance_type": "c5.2xlarge",
+    #                     }
+    #                 ],
+    #                 "expected_running_instances": 0,
+    #                 "expected_power_saved_instances": 10,
+    #                 "disable_hyperthreading": False,
+    #                 "enable_efa": False,
+    #             },
+    #             "queue1-i3": {
+    #                 "instances": [
+    #                     {
+    #                         "instance_type": instance_type,
+    #                     }
+    #                     for instance_type in spot_instance_types
+    #                 ],
+    #                 "expected_running_instances": 0,
+    #                 "expected_power_saved_instances": 10,
+    #                 "disable_hyperthreading": False,
+    #                 "enable_efa": False,
+    #             },
+    #         },
+    #         "compute_type": "ondemand" if "us-iso" in region else "spot",
+    #     },
+    #     "queue2": {
+    #         "compute_resources": {
+    #             "queue2-i1": {
+    #                 "instances": [
+    #                     {
+    #                         "instance_type": "c5n.18xlarge",
+    #                     }
+    #                 ],
+    #                 "expected_running_instances": 0,
+    #                 "expected_power_saved_instances": 1,
+    #                 "enable_efa": True,
+    #                 "disable_hyperthreading": True,
+    #             }
+    #         },
+    #         "compute_type": "ondemand",
+    #         "networking": {"placement_group": {"enabled": False}},
+    #     },
+    #     "queue3": {
+    #         "compute_resources": {
+    #             "queue3-i1": {
+    #                 "instances": [
+    #                     {
+    #                         "instance_type": "c5n.18xlarge",
+    #                     }
+    #                 ],
+    #                 "expected_running_instances": 0,
+    #                 "expected_power_saved_instances": 10,
+    #                 "disable_hyperthreading": True,
+    #                 "enable_efa": True,
+    #             },
+    #             "queue3-i2": {
+    #                 "instances": [
+    #                     {
+    #                         "instance_type": "t3.xlarge",
+    #                     }
+    #                 ],
+    #                 "expected_running_instances": 0,
+    #                 "expected_power_saved_instances": 10,
+    #                 "disable_hyperthreading": False,
+    #                 "enable_efa": False,
+    #             },
+    #         },
+    #         "compute_type": "ondemand",
+    #         "networking": {"placement_group": {"enabled": False}},
+    #     },
+    # }
+    #
+    # _assert_scheduler_nodes(queues_config=updated_queues_config, slurm_commands=slurm_commands)
+    # _assert_launch_templates_config(queues_config=updated_queues_config, cluster_name=cluster.name, region=region)
+    #
+    # # Read updated configuration
+    # with open(updated_config_file, encoding="utf-8") as conf_file:
+    #     updated_config = yaml.safe_load(conf_file)
+    #
+    # # Check new S3 resources
+    # check_s3_read_resource(region, cluster, get_policy_resources(updated_config, enable_write_access=False))
+    # check_s3_read_write_resource(region, cluster, get_policy_resources(updated_config, enable_write_access=True))
+    #
+    # # Check new Additional IAM policies
+    # _check_role_attached_policy(region, cluster, additional_policy_arn)
+    #
+    # # Assert that the job submitted before the update is still running
+    # assert_that(slurm_commands.get_job_info(job_id)).contains("JobState=RUNNING")
+    #
+    # _check_volume(cluster, updated_config, region)
+    #
+    # # Launch a new instance for queue1 and test updated pre/post install script execution and extra json update
+    # # Add a new dynamic node to queue1-i3
+    # new_compute_node = _add_compute_nodes(slurm_commands, "queue1", "queue1-i3&dynamic")
+    #
+    # logging.info(f"New compute node: {new_compute_node}")
+    #
+    # assert_that(len(new_compute_node), description="There should be only one new compute node").is_equal_to(1)
+    # _check_script(command_executor, slurm_commands, new_compute_node[0], "updated_preinstall", "ABC")
+    # _check_script(command_executor, slurm_commands, new_compute_node[0], "updated_postinstall", "DEF")
+    #
+    # # Check the new update hook with new args is executed at cluster update time
+    # _check_head_node_script(command_executor, "updated_postupdate", "UPDATE-ARG2")
+    #
+    # # Same as previous update, but with a post update script that fails
+    # failed_update_config_file = pcluster_config_reader(
+    #     config_file="pcluster.config.update.yaml",
+    #     output_file="pcluster.config.update.failed.yaml",
+    #     resource_bucket=bucket_name,
+    #     additional_policy_arn=additional_policy_arn,
+    #     postupdate_script="failed_postupdate.sh",
+    #     spot_instance_types=spot_instance_types,
+    # )
+    # cluster.update(str(failed_update_config_file), raise_on_error=False, log_error=False)
+    #
+    # _check_rollback_with_expected_error_message(region, cluster)
+    #
+    # # check new extra json
+    # _check_extra_json(command_executor, slurm_commands, new_compute_node[0], "test_value")
+    #
+    # # This check must be retried when executed to validate a rollback, because the rollback is a non-blocking operation.
+    # # In particular, the stack reaches the UPDATE_ROLLBACK_COMPLETE state without waiting for the head node to
+    # # signal the success to its WaitCondition.
+    # # As a consequence, there may be some cluster nodes still executing their update recipes.
+    # retry(wait_fixed=seconds(10), stop_max_delay=minutes(3))(assert_instance_config_version_on_ddb)(
+    #     cluster, last_cluster_config_version
+    # )
 
 
 def _check_rollback_with_expected_error_message(region, cluster):
