@@ -60,12 +60,14 @@ def test_slurm_cli_commands(
                 pytest.fail(f"Installer path is not valid: {installer_path}")
             monkeypatch.setenv("PATH", installer_path + ":" + os_lib.environ["PATH"])
             logging.info("Using installer: %s", run_command("which pcluster"))
+            logging.info("Env output: %s", run_command("env"))
         else:
             pytest.skip("Skipping test with installer because installer_path is not provided.")
     else:
         logging.info("Using pcluster python package: %s", run_command("which pcluster"))
+        logging.info("Env output: %s", run_command("env"))
 
-    # Use long scale down idle time so we know nodes are terminated by pcluster stop
+# Use long scale down idle time so we know nodes are terminated by pcluster stop
     cluster_config = pcluster_config_reader(scaledown_idletime=60)
 
     if "alinux" in os or "us-iso" not in region:  # The code does not know non-amazon vanilla AMIs IDs in iso regions
