@@ -194,7 +194,7 @@ def _assert_node_version():
         # env_output = "test"
         LOGGER.critical("Environment from 'env' command:%s", env_output)
         node_version_string = subprocess.check_output(  # nosec B607 B603
-            'unset LD_LIBRARY_PATH && node --version', stderr=subprocess.STDOUT, shell=False, encoding="utf-8"
+            ["node", "--version"], stderr=subprocess.STDOUT, shell=True, encoding="utf-8"
         )
         LOGGER.debug("Found Node.js version (%s)", node_version_string)
     except subprocess.CalledProcessError as e:
