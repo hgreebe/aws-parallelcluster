@@ -15,6 +15,7 @@ import shutil
 # A nosec comment is appended to the following line in order to disable the B404 check.
 # In this file the input of the module subprocess is trusted.
 import subprocess  # nosec B404
+import os
 
 import six
 from packaging import version as packaging_version
@@ -185,6 +186,10 @@ def _assert_node_version():
         #   PATH
         # [B603:subprocess_without_shell_equals_true] Is suppressed because input of check_output is not coming from
         #   untrusted source
+
+        env = os.environ.copy()
+        env.pop('LD_LIBRARY_PATH', None)
+
         env_output = subprocess.check_output(
             ["env"],
             stderr=subprocess.STDOUT,
@@ -193,8 +198,9 @@ def _assert_node_version():
         )
         # env_output = "test"
         LOGGER.critical("Environment from 'env' command:%s", env_output)
+
         node_version_string = subprocess.check_output(  # nosec B607 B603
-            ["node", "--version"], stderr=subprocess.STDOUT, shell=True, encoding="utf-8"
+            ["node", "--version"], stderr=subprocess.STDOUT, shell=True, encoding="utf-8", env=env
         )
         LOGGER.debug("Found Node.js version (%s)", node_version_string)
     except subprocess.CalledProcessError as e:
