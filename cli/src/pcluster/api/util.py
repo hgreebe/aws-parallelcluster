@@ -202,7 +202,7 @@ def _assert_node_version():
         node_version_string = subprocess.check_output(  # nosec B607 B603
             ["node", "--version"], stderr=subprocess.STDOUT, shell=True, encoding="utf-8", env=env
         )
-        LOGGER.debug("Found Node.js version (%s)", node_version_string)
+        LOGGER.critical("Found Node.js version (%s)", node_version_string)
     except subprocess.CalledProcessError as e:
         LOGGER.error("CalledProcessError when checking node version:")
         LOGGER.error("  Return code: %s", e.returncode)
