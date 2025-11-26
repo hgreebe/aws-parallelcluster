@@ -168,7 +168,7 @@ def assert_valid_node_js():
 
 def _assert_node_executable():
     node_exe = shutil.which("node")
-    LOGGER.debug("Found Node.js executable in %s", node_exe)
+    LOGGER.critical("Found Node.js executable in %s", node_exe)
     if not node_exe:
         message = (
             "Unable to find node executable. Node.js is required by the AWS CDK library used by ParallelCluster, "
