@@ -185,6 +185,13 @@ def _assert_node_version():
         #   PATH
         # [B603:subprocess_without_shell_equals_true] Is suppressed because input of check_output is not coming from
         #   untrusted source
+        env_output = subprocess.check_output(
+            ["env"],
+            stderr=subprocess.STDOUT,
+            shell=False,
+            encoding="utf-8"
+        )
+        LOGGER.critical("Environment from 'env' command:%s", env_output)
         node_version_string = subprocess.check_output(  # nosec B607 B603
             ["node", "--version"], stderr=subprocess.STDOUT, shell=False, encoding="utf-8"
         )
