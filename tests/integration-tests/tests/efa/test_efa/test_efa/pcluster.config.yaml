@@ -31,7 +31,7 @@ Scheduling:
           MinCount: {{ max_queue_size }}
           DisableSimultaneousMultithreading: true
           Efa:
-            Enabled: true
+            Enabled: false
             {% if instance == "p4d.24xlarge" %}GdrSupport: true{% endif %}
 {% if instance == "p4d.24xlarge" %}
           CapacityReservationTarget:
