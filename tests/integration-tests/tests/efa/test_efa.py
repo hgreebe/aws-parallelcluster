@@ -87,7 +87,7 @@ EFA_FSX_UNSUPPORTED_FAMILIES = EFA_V1_NITRO_V3_FAMILIES | {"trn2", "trn2u"}
 # EFA for FSx for Lustre is only supported on these client OSes: AL2023, RHEL 9.5+, and Ubuntu 22.04+
 # on kernel 6.8+. RHEL 8 and Rocky are not supported, so on those the client stays on tcp even on an
 # otherwise-capable instance. See "Configuring EFA clients" in the FSx for Lustre guide.
-EFA_FSX_SUPPORTED_OSES = {"alinux2023", "rhel9", "ubuntu2204", "ubuntu2404"}
+EFA_FSX_SUPPORTED_OSES = {"alinux2023", "rhel9", "ubuntu2204", "ubuntu2404", "ubuntu2604"}
 
 # Candidate head node instance types for when compute is p* or hpc* (one per family).
 HEAD_NODE_CANDIDATES_X86 = [
