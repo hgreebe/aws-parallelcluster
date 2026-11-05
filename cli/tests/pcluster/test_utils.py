@@ -88,11 +88,11 @@ def test_generate_random_prefix():
     [
         (
             "x86_64",
-            ["alinux2023", "ubuntu2204", "ubuntu2404", "rhel8", "rocky8", "rhel9", "rocky9"],
+            ["alinux2023", "ubuntu2204", "ubuntu2404", "rhel8", "rocky8", "rhel9", "rocky9", "ubuntu2604"],
         ),
         (
             "arm64",
-            ["alinux2023", "ubuntu2204", "ubuntu2404", "rhel8", "rocky8", "rhel9", "rocky9"],
+            ["alinux2023", "ubuntu2204", "ubuntu2404", "rhel8", "rocky8", "rhel9", "rocky9", "ubuntu2604"],
         ),
     ],
 )
