@@ -37,6 +37,11 @@ EXTERNAL_SLURM_DBD_ROLE_NAME = "ExternalSlurmDbd"
 NODE_ROLE_NAMES = {HEAD_NODE_ROLE_NAME, COMPUTE_NODE_ROLE_NAME, LOGIN_NODE_ROLE_NAME, EXTERNAL_SLURM_DBD_ROLE_NAME}
 
 
+# Log streams configured for all the OSes of a platform that are never written on some OSes.
+# Ubuntu 26.04 supports DCV only with Wayland, without the Xdcv session log.
+OS_ABSENT_LOG_STREAMS = {"ubuntu2604": ["dcv-xsession"]}
+
+
 def _get_log_group_name_for_cluster(cluster_name):
     """Return the name of the log group to be created for the given cluster if CloudWatch logging is enabled."""
     logs_client = boto3.client("logs")
@@ -95,6 +100,7 @@ class CloudWatchLoggingClusterState:
     def __init__(self, scheduler, os, cluster, feature_key=None, shared_dir=DEFAULT_SHARED_DIR):
         """Get the state of the cluster as it pertains to the CloudWatch logging feature."""
         self.scheduler = scheduler
+        self.os = os
         self.platform = self._base_os_to_platform(os)
         self.cluster = cluster
         self.feature_key = feature_key
@@ -298,8 +304,13 @@ class CloudWatchLoggingClusterState:
 
     def _filter_logs_on_platform_and_scheduler(self, logs):
         """Filter from logs all entries that don't support the cluster's OS or scheduler."""
+        absent_log_streams = OS_ABSENT_LOG_STREAMS.get(self.os, [])
         return [
-            log for log in logs if self.scheduler in log.get("schedulers") and self.platform in log.get("platforms")
+            log
+            for log in logs
+            if self.scheduler in log.get("schedulers")
+            and self.platform in log.get("platforms")
+            and log.get("log_stream_name") not in absent_log_streams
         ]
 
     def _log_is_relevant_for_feature(self, log, node_config):
